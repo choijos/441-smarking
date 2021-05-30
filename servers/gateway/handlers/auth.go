@@ -3,22 +3,21 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"path"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/gorilla/mux"
+	"github.com/choijos/assignments-choijos/servers/gateway/models/cars"
 	"github.com/choijos/assignments-choijos/servers/gateway/models/users"
 	"github.com/choijos/assignments-choijos/servers/gateway/sessions"
 )
 
-//TODO: define HTTP handler functions as described in the
-//assignment description. Remember to use your handler context
-//struct as the receiver on these functions so that you have
-//access to things like the session store and user store.
+// UsersHandler handles user requests such as adding new users
 func (ctx *HandlerContext) UsersHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
@@ -44,20 +43,6 @@ func (ctx *HandlerContext) UsersHandler(w http.ResponseWriter, r *http.Request) 
 
 		}
 
-		// _, err = ctx.UserStore.GetByEmail(toUser.Email)
-		// if err != nil {
-		// 	http.Error(w, err.Error(), http.StatusBadRequest)
-		// 	return
-
-		// }
-
-		// _, err = ctx.UserStore.GetByUserName(toUser.UserName)
-		// if err != nil {
-		// 	http.Error(w, err.Error(), http.StatusBadRequest)
-		// 	return
-
-		// }
-
 		dbmsUser, err := ctx.UserStore.Insert(toUser)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("%v %s", dbmsUser, err.Error()), http.StatusBadRequest)
@@ -81,12 +66,6 @@ func (ctx *HandlerContext) UsersHandler(w http.ResponseWriter, r *http.Request) 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 
-		// if dbmsUser.ID < 1 {
-		// 	http.Error(w, "user id property not set correctly", http.StatusInternalServerError)
-		// 	return
-
-		// }
-
 		enc := json.NewEncoder(w)
 		enc.Encode(dbmsUser)
 
@@ -97,7 +76,17 @@ func (ctx *HandlerContext) UsersHandler(w http.ResponseWriter, r *http.Request) 
 
 }
 
+// SpecificUserHandler handles specific user requests such as applying updates
+// 	to their profiles and retrieving profiles
 func (ctx *HandlerContext) SpecificUserHandler(w http.ResponseWriter, r *http.Request) {
+	// allPaths := strings.Split(r.URL.Path, "/")
+	// if len(allPaths) == 5 { // pretty janky solution, might want to see if we want to use gorilla mux instead of net/http for route parameters
+	// 	ctx.SpecificUserCarHandler(w, r)
+
+	// } else if len(allPaths) == 3 {
+	// 	ctx.UserCarsHandler(w, r)
+
+	// } else {
 	sessID, err := sessions.GetSessionID(r, ctx.SessKey)
 
 	if err != nil {
@@ -133,7 +122,7 @@ func (ctx *HandlerContext) SpecificUserHandler(w http.ResponseWriter, r *http.Re
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNotFound)
 				return
-				
+
 			}
 
 		}
@@ -152,7 +141,7 @@ func (ctx *HandlerContext) SpecificUserHandler(w http.ResponseWriter, r *http.Re
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error getting session state: %v", err), http.StatusInternalServerError)
 			return
-			
+
 		}
 
 		if urlID != "me" && urlID != strconv.FormatInt(sess.AuthUser.ID, 10) {
@@ -204,6 +193,7 @@ func (ctx *HandlerContext) SpecificUserHandler(w http.ResponseWriter, r *http.Re
 
 }
 
+// SessionsHandlers handles session requests, such as beginning a user session
 func (ctx *HandlerContext) SessionsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
@@ -230,7 +220,7 @@ func (ctx *HandlerContext) SessionsHandler(w http.ResponseWriter, r *http.Reques
 				return
 
 			}
-			
+
 			http.Error(w, fmt.Sprintf("error getting user with given email and credentials: %v", err), http.StatusInternalServerError)
 			return
 
@@ -295,6 +285,7 @@ func (ctx *HandlerContext) SessionsHandler(w http.ResponseWriter, r *http.Reques
 
 }
 
+// SpecificSessionHandler handles specific session requests, such as ending a user session
 func (ctx *HandlerContext) SpecificSessionHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "DELETE" {
 		if path.Base(r.URL.Path) != "mine" {
@@ -311,6 +302,233 @@ func (ctx *HandlerContext) SpecificSessionHandler(w http.ResponseWriter, r *http
 		}
 
 		w.Write([]byte("signed out"))
+
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+
+	}
+
+}
+
+// UserCarsHandler handles user car requests, such as registering a car under the user
+func (ctx *HandlerContext) UserCarsHandler(w http.ResponseWriter, r *http.Request) {
+	sessID, err := sessions.GetSessionID(r, ctx.SessKey) // not sure fi we need this, just for easy authentication
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+
+	}
+
+	if r.Method == "POST" {
+		if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
+			http.Error(w, "request body must be in json", http.StatusUnsupportedMediaType)
+			return
+
+		}
+
+		newCar := &cars.Car{}
+		body, _ := ioutil.ReadAll(r.Body)
+
+		dec := json.NewDecoder(strings.NewReader(string(body)))
+		if err := dec.Decode(newCar); err != nil {
+			http.Error(w, "error decoding json", http.StatusBadRequest)
+			return
+
+		}
+
+		insCar, err := ctx.CarStore.InsertCar(newCar)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest) // will Return AlrRegist if user has already registered this car
+			return
+
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+
+		enc := json.NewEncoder(w)
+		if err := enc.Encode(insCar); err != nil {
+			http.Error(w, "error encoding json", http.StatusInternalServerError)
+			return
+
+		}
+
+	} else if r.Method == "GET" {
+		sess := SessionState{}
+		err = ctx.SessStore.Get(sessID, &sess)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("error getting session state: %v", err), http.StatusInternalServerError)
+			return
+
+		}
+
+		sessUserID := sess.AuthUser.ID // grabbing the curr user ID from the session
+		// pathID := strings.Split(r.URL.Path, "/")[2] // hopefully isolating the :id route parameter thing
+		pathID := mux.Vars(r)["id"]
+		if len(pathID) == 0 {
+			http.Error(w, "no user specified", http.StatusBadRequest)
+			return
+	
+		}
+		
+		pathIntID, err := strconv.ParseInt(pathID, 10, 64)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("error converting provided User ID from url to int64: %v", err), http.StatusNotAcceptable)
+			return
+
+		}
+
+		if sessUserID != pathIntID { // not sure if we need this heck at all
+			http.Error(w, "You are not this user", http.StatusUnauthorized)
+			return
+
+		}
+
+		allCars, err := ctx.CarStore.GetCarsByUserID(pathIntID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		enc := json.NewEncoder(w)
+		if err := enc.Encode(allCars); err != nil {
+			http.Error(w, "error encoding json", http.StatusInternalServerError)
+			return
+
+		}
+
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+
+	}
+
+}
+
+// SpecificUserCarHandler handles specific user car requests such as updating a car's information,
+// 	returning a specific user car, and removing a car for a user
+func (ctx *HandlerContext) SpecificUserCarHandler(w http.ResponseWriter, r *http.Request) {
+	sessID, err := sessions.GetSessionID(r, ctx.SessKey) // not sure fi we need this, just for easy authentication
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+
+	}
+
+	sess := SessionState{}
+	err = ctx.SessStore.Get(sessID, &sess)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error getting session state: %v", err), http.StatusInternalServerError)
+		return
+
+	}
+
+	sessUserID := sess.AuthUser.ID
+	pathID := mux.Vars(r)["id"]
+	if len(pathID) == 0 {
+		http.Error(w, "no user specified", http.StatusBadRequest)
+		return
+
+	}
+
+	// pathID := strings.Split(r.URL.Path, "/")[2] // hopefully isolating the :id route parameter thing
+	pathIntID, err := strconv.ParseInt(pathID, 10, 64)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error converting provided User ID from url to int64: %v", err), http.StatusBadRequest)
+		return
+
+	}
+
+	if sessUserID != pathIntID { // not sure if we need this check at all
+		http.Error(w, "You are not authorized to view this car", http.StatusUnauthorized)
+		return
+
+	}
+
+	// pathID - userid
+	// pathCarID := strings.Split(r.URL.Path, "/")[4]
+	pathCarID := mux.Vars(r)["carid"]
+	if len(pathCarID) == 0 {
+		http.Error(w, "no car specified", http.StatusBadRequest)
+		return
+
+	}
+
+	carID, err := strconv.ParseInt(pathCarID, 10, 64)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error converting provided User ID from url to int64: %v", err), http.StatusBadRequest)
+		return
+
+	}
+
+	if r.Method == "GET" {
+		car, err := ctx.CarStore.GetSpecificUserCar(pathIntID, carID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest) // maybe should be internal status error
+			return
+
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		enc := json.NewEncoder(w)
+		if err := enc.Encode(car); err != nil {
+			http.Error(w, "error encoding json", http.StatusInternalServerError)
+			return
+
+		}
+
+	} else if r.Method == "PATCH" {
+		if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
+			http.Error(w, "request body must be in json", http.StatusUnsupportedMediaType)
+			return
+
+		}
+
+		upd := &cars.UpdateCar{}
+		body, _ := ioutil.ReadAll(r.Body)
+
+		dec := json.NewDecoder(strings.NewReader(string(body)))
+		if err := dec.Decode(upd); err != nil {
+			http.Error(w, "error decoding json", http.StatusBadRequest)
+			return
+
+		}
+
+		upCar, err := ctx.CarStore.UpdateCar(upd, carID, sessUserID)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("error getting car with id %d for user %d: %v", carID, sessUserID, err), http.StatusInternalServerError) // might be client error instead?
+			return
+
+		}
+
+		enc := json.NewEncoder(w)
+		if err := enc.Encode(upCar); err != nil {
+			http.Error(w, "error encoding json", http.StatusInternalServerError)
+			return
+
+		}
+
+		w.WriteHeader(http.StatusOK) // might want to move these headers before the encoder?
+		w.Header().Set("Content-Type", "application/json")
+
+	} else if r.Method == "DELETE" {
+		err := ctx.CarStore.DeleteCarForUser(sessUserID, carID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest) // check the err returning for this function, and also if it would be a server or client error
+			return
+
+		}
+
+		w.Write([]byte("Car successfully removed from this user")) // not sure if we want to write this out here
 
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)

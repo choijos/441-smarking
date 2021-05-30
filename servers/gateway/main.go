@@ -1,14 +1,11 @@
 package main
 
 import (
-	// "database/sql"
-	// "fmt"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os"
 	"strings"
@@ -17,10 +14,13 @@ import (
 	"time"
 
 	"github.com/choijos/assignments-choijos/servers/gateway/handlers"
+	"github.com/choijos/assignments-choijos/servers/gateway/models/cars"
 	"github.com/choijos/assignments-choijos/servers/gateway/models/users"
 	"github.com/choijos/assignments-choijos/servers/gateway/sessions"
 	"github.com/go-redis/redis"
+	"github.com/gorilla/mux"
 	_ "github.com/go-sql-driver/mysql"
+
 )
 
 // Director is the director used for routing to microservices
@@ -81,7 +81,7 @@ func getURLs(addrString string) []*url.URL {
 	}
 
 	return URLs
-	
+
 }
 
 //main is the main entry point for the server
@@ -145,6 +145,7 @@ func main() {
 		SessKey:   sessKey,
 		SessStore: newrs,
 		UserStore: &users.SQLStore{DbStore: db},
+		CarStore:  &cars.SQLStore{DbStore: db},
 	}
 
 	addr := os.Getenv("ADDR")
@@ -162,24 +163,29 @@ func main() {
 
 	}
 
-	// Create URLs for proxies
-	messagesURLs := getURLs(messagesAddr)
-	summaryURLs := getURLs(summaryAddr)
-	messagesProxy := &httputil.ReverseProxy{Director: CustomDirector(messagesURLs, newCtx)}
-	summaryProxy := &httputil.ReverseProxy{Director: CustomDirector(summaryURLs, newCtx)}
+	// // Create URLs for proxies
+	// messagesURLs := getURLs(messagesAddr)
+	// summaryURLs := getURLs(summaryAddr)
+	// messagesProxy := &httputil.ReverseProxy{Director: CustomDirector(messagesURLs, newCtx)}
+	// summaryProxy := &httputil.ReverseProxy{Director: CustomDirector(summaryURLs, newCtx)}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/v1/users", newCtx.UsersHandler)
-	mux.HandleFunc("/v1/users/", newCtx.SpecificUserHandler)
-	mux.HandleFunc("/v1/sessions", newCtx.SessionsHandler)
-	mux.HandleFunc("/v1/sessions/", newCtx.SpecificSessionHandler)
+	r := mux.NewRouter()
+	r.HandleFunc("/users", newCtx.UsersHandler)
+	r.HandleFunc("/users/", newCtx.SpecificUserHandler)
+	r.HandleFunc("/sessions", newCtx.SessionsHandler)
+	r.HandleFunc("/sessions/", newCtx.SpecificSessionHandler)
 
-	mux.Handle("/v1/channels", messagesProxy) // double check the round robin stuff
-	mux.Handle("/v1/channels/", messagesProxy)
-	mux.Handle("/v1/messages/", messagesProxy)
-	mux.Handle("/v1/summary", summaryProxy)
+	// new stuff for assignment
+	r.HandleFunc("/users/{id}/cars", newCtx.UserCarsHandler)
+	r.HandleFunc("/users/{id}/cars/{carid}", newCtx.SpecificUserCarHandler)
 
-	wrappedMux := &handlers.CORS{Handler: mux}
+	// mux.Handle("/v1/channels", messagesProxy) // double check the round robin stuff
+	// mux.Handle("/v1/channels/", messagesProxy)
+	// mux.Handle("/v1/messages/", messagesProxy)
+	// mux.Handle("/v1/summary", summaryProxy)
+
+	// wrappedMux := &handlers.CORS{Handler: mux}
+	wrappedMux := &handlers.CORS{Handler: r}
 
 	log.Printf("Server is listening at %s", addr)
 	log.Fatal(http.ListenAndServeTLS(addr, tlsCertPath, tlsKeyPath, wrappedMux)) // add tls?

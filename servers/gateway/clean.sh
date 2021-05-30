@@ -1,30 +1,12 @@
-# docker rm -f choijos.me
-
-# docker pull choijos/choijos.me
-
-# docker run \
-#   -d \
-#   -p 443:443 \
-#   -v /etc/letsencrypt:/etc/letsencrypt:ro \
-#   -e TLSCERT=/etc/letsencrypt/live/api.choijos.me/fullchain.pem \
-#   -e TLSKEY=/etc/letsencrypt/live/api.choijos.me/privkey.pem \
-#   --name choijos.me \
-#   choijos/choijos.me
-
-# exit
-
-# docker network rm info441network
-# docker network create info441network
-
-# DB & network stuff
+# DB & network
 docker rm -f redisServer
 docker run -d --name redisServer --network info441network redis
 
-export MYSQL_ROOT_PASSWORD=thisbetterwork #$(openssl rand -base64 18)
-export DB_NAME=userinfo #userinfo
+export MYSQL_ROOT_PASSWORD=thisbetterwork
+export DB_NAME=userinfo
 
 docker pull choijos/sqla4
-docker rm -f sqla4 # sqla4
+docker rm -f sqla4
 
 docker run -d \
   -p 3306:3306 \
@@ -35,7 +17,7 @@ docker run -d \
   choijos/sqla4
 
 
-# Gateway stuff
+# Gateway
 docker rm -f choijos.me
 docker pull choijos/choijos.me
 
