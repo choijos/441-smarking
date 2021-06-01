@@ -22,4 +22,4 @@
 # ssh ec2-user@ec2-35-81-89-251.us-west-2.compute.amazonaws.com < build.sh
 sh build.sh
 
-ssh ec2-user@ec2-35-81-89-251.us-west-2.compute.amazonaws.com < clean.sh
+ssh ec2-user@api.vanessasgh.me < clean.sh

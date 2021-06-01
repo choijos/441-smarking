@@ -159,7 +159,7 @@ func main() {
 	mux.HandleFunc("/v1/sessions", newCtx.SessionsHandler)
 	mux.HandleFunc("/v1/sessions/", newCtx.SpecificSessionHandler)
 
-	// new stuff for assignment
+	// new stuff for assignment 
 	// r.HandleFunc("/v1/users/{id}/cars", newCtx.UserCarsHandler)
 	// r.HandleFunc("/v1/users/{id}/cars/{carid}", newCtx.SpecificUserCarHandler)
 	mux.HandleFunc("/v1/cars", newCtx.UserCarsHandler)

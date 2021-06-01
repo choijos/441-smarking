@@ -29,7 +29,7 @@ export TLSCERT=/etc/letsencrypt/live/api.vanessasgh.me/fullchain.pem
 export TLSKEY=/etc/letsencrypt/live/api.vanessasgh.me/privkey.pem
 export SESSIONKEY=$(openssl rand -base64 18)
 export REDISADDR=redisServer:6379
-export DSN=root:$MYSQL_ROOT_PASSWORD@tcp\(sqla4:3306\)/$DB_NAME
+export DSN=root:$MYSQL_ROOT_PASSWORD@tcp\(finaldb:3306\)/$DB_NAME
 export PARKINGADDR=http://parking:80
 
 docker run -d \
