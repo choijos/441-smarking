@@ -321,6 +321,16 @@ func (ctx *HandlerContext) UserCarsHandler(w http.ResponseWriter, r *http.Reques
 
 	}
 
+	sess := SessionState{}
+	err = ctx.SessStore.Get(sessID, &sess)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error getting session state: %v", err), http.StatusInternalServerError)
+		return
+
+	}
+
+	sessUserID := sess.AuthUser.ID // grabbing the curr user ID from the session
+
 	if r.Method == "POST" {
 		if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
 			http.Error(w, "request body must be in json", http.StatusUnsupportedMediaType)
@@ -338,7 +348,7 @@ func (ctx *HandlerContext) UserCarsHandler(w http.ResponseWriter, r *http.Reques
 
 		}
 
-		insCar, err := ctx.CarStore.InsertCar(newCar)
+		insCar, err := ctx.CarStore.InsertCar(newCar, sessUserID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest) // will Return AlrRegist if user has already registered this car
 			return
@@ -356,37 +366,28 @@ func (ctx *HandlerContext) UserCarsHandler(w http.ResponseWriter, r *http.Reques
 		}
 
 	} else if r.Method == "GET" {
-		sess := SessionState{}
-		err = ctx.SessStore.Get(sessID, &sess)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("error getting session state: %v", err), http.StatusInternalServerError)
-			return
-
-		}
-
-		sessUserID := sess.AuthUser.ID // grabbing the curr user ID from the session
-		// pathID := strings.Split(r.URL.Path, "/")[2] // hopefully isolating the :id route parameter thing
-		pathID := mux.Vars(r)["id"]
-		if len(pathID) == 0 {
-			http.Error(w, "no user specified", http.StatusBadRequest)
-			return
+		//// pathID := strings.Split(r.URL.Path, "/")[2] // hopefully isolating the :id route parameter thing
+		// pathID := mux.Vars(r)["id"]
+		// if len(pathID) == 0 {
+		// 	http.Error(w, "no user specified", http.StatusBadRequest)
+		// 	return
 	
-		}
+		// }
 		
-		pathIntID, err := strconv.ParseInt(pathID, 10, 64)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("error converting provided User ID from url to int64: %v", err), http.StatusNotAcceptable)
-			return
+		// pathIntID, err := strconv.ParseInt(pathID, 10, 64)
+		// if err != nil {
+		// 	http.Error(w, fmt.Sprintf("error converting provided User ID from url to int64: %v", err), http.StatusNotAcceptable)
+		// 	return
 
-		}
+		// }
 
-		if sessUserID != pathIntID { // not sure if we need this heck at all
-			http.Error(w, "You are not this user", http.StatusUnauthorized)
-			return
+		// if sessUserID != pathIntID { // not sure if we need this heck at all
+		// 	http.Error(w, "You are not this user", http.StatusUnauthorized)
+		// 	return
 
-		}
+		// }
 
-		allCars, err := ctx.CarStore.GetCarsByUserID(pathIntID)
+		allCars, err := ctx.CarStore.GetCarsByUserID(sessUserID) // using the currently authenticated user
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -438,28 +439,30 @@ func (ctx *HandlerContext) SpecificUserCarHandler(w http.ResponseWriter, r *http
 
 	}
 
-	// pathID := strings.Split(r.URL.Path, "/")[2] // hopefully isolating the :id route parameter thing
-	pathIntID, err := strconv.ParseInt(pathID, 10, 64)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("error converting provided User ID from url to int64: %v", err), http.StatusBadRequest)
-		return
+	// // pathID := strings.Split(r.URL.Path, "/")[2] // hopefully isolating the :id route parameter thing
+	// pathIntID, err := strconv.ParseInt(pathID, 10, 64)
+	// if err != nil {
+	// 	http.Error(w, fmt.Sprintf("error converting provided User ID from url to int64: %v", err), http.StatusBadRequest)
+	// 	return
 
-	}
+	// }
 
-	if sessUserID != pathIntID { // not sure if we need this check at all
-		http.Error(w, "You are not authorized to view this car", http.StatusUnauthorized)
-		return
+	// if sessUserID != pathIntID { // not sure if we need this check at all
+	// 	http.Error(w, "You are not authorized to view this car", http.StatusUnauthorized)
+	// 	return
 
-	}
+	// }
 
 	// pathID - userid
 	// pathCarID := strings.Split(r.URL.Path, "/")[4]
-	pathCarID := mux.Vars(r)["carid"]
-	if len(pathCarID) == 0 {
-		http.Error(w, "no car specified", http.StatusBadRequest)
-		return
+	// pathCarID := mux.Vars(r)["carid"]
+	// if len(pathCarID) == 0 {
+	// 	http.Error(w, "no car specified", http.StatusBadRequest)
+	// 	return
 
-	}
+	// }
+
+	pathCarID := path.Base(r.URL.Path)
 
 	carID, err := strconv.ParseInt(pathCarID, 10, 64)
 	if err != nil {
@@ -469,7 +472,7 @@ func (ctx *HandlerContext) SpecificUserCarHandler(w http.ResponseWriter, r *http
 	}
 
 	if r.Method == "GET" {
-		car, err := ctx.CarStore.GetSpecificUserCar(pathIntID, carID)
+		car, err := ctx.CarStore.GetSpecificUserCar(sessUserID, carID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest) // maybe should be internal status error
 			return

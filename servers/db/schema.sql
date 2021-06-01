@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS usersignin (
 -- creating table consisting of car information
 CREATE TABLE IF NOT EXISTS cars (
   ID int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  LicensePlate varchar(15) NOT NULL, -- took out UNIQUE cause multiple users could drive the same car
+  LicensePlate varchar(15) NOT NULL,
   UserID int NOT NULL REFERENCES users(id),
   Make varchar(128),
   Model varchar(128),
@@ -32,11 +32,3 @@ CREATE TABLE IF NOT EXISTS cars (
   Color varchar(128)
 
 );
-
-
--- CREATE TABLE IF NOT EXISTS drivers (
---   ID int NOT NULL AUTO_INCREMENT PRIMARY KEY,
---   CarID int NOT NULL REFERENCES cars(ID),
---   UserID int NOT NULL REFERENCES users(id)
-
--- );

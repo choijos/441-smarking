@@ -20,7 +20,6 @@ import (
 	"github.com/choijos/assignments-choijos/servers/gateway/sessions"
 	"github.com/go-redis/redis"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
 )
 
 // Director is the director used for routing to microservices
@@ -86,20 +85,9 @@ func getURLs(addrString string) []*url.URL {
 
 //main is the main entry point for the server
 func main() {
-	/* TODO: add code to do the following
-	- Read the ADDR environment variable to get the address
-	  the server should listen on. If empty, default to ":80"
-	- Create a new mux for the web server.
-	- Tell the mux to call your handlers.SummaryHandler function
-	  when the "/v1/summary" URL path is requested.
-	- Start a web server listening on the address you read from
-	  the environment variable, using the mux you created as
-	  the root handler. Use log.Fatal() to report any errors
-	  that occur when trying to start the web server.
-	*/
 	parkingAddr := os.Getenv("PARKINGADDR")
 	if len(parkingAddr) == 0 {
-		log.Fatal("No message address environment variable set")
+		log.Fatal("No parking address environment variable set")
 
 	}
 
@@ -165,27 +153,27 @@ func main() {
 	parkingURLs := getURLs(parkingAddr)
 	parkingProxy := &httputil.ReverseProxy{Director: CustomDirector(parkingURLs, newCtx)}
 
-	r := mux.NewRouter()
-	r.HandleFunc("/v1/users", newCtx.UsersHandler)
-	r.HandleFunc("/v1/users/", newCtx.SpecificUserHandler)
-	r.HandleFunc("/v1/sessions", newCtx.SessionsHandler)
-	r.HandleFunc("/v1/sessions/", newCtx.SpecificSessionHandler)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/v1/users", newCtx.UsersHandler)
+	mux.HandleFunc("/v1/users/", newCtx.SpecificUserHandler)
+	mux.HandleFunc("/v1/sessions", newCtx.SessionsHandler)
+	mux.HandleFunc("/v1/sessions/", newCtx.SpecificSessionHandler)
 
 	// new stuff for assignment
-	r.HandleFunc("/v1/users/{id}/cars", newCtx.UserCarsHandler)
-	r.HandleFunc("/v1/users/{id}/cars/{carid}", newCtx.SpecificUserCarHandler)
+	// r.HandleFunc("/v1/users/{id}/cars", newCtx.UserCarsHandler)
+	// r.HandleFunc("/v1/users/{id}/cars/{carid}", newCtx.SpecificUserCarHandler)
+	mux.HandleFunc("/v1/cars", newCtx.UserCarsHandler)
+	mux.HandleFunc("/v1/cars/", newCtx.SpecificUserCarHandler)
 
-	r.Handle("/v1/usersparking/", parkingProxy)
-	r.Handle("/v1/parking/", parkingProxy)
-	
+	mux.Handle("/v1/usersparking/", parkingProxy)
+	mux.Handle("/v1/parking/", parkingProxy)
 
 	// mux.Handle("/v1/channels", messagesProxy) // double check the round robin stuff
 	// mux.Handle("/v1/channels/", messagesProxy)
 	// mux.Handle("/v1/messages/", messagesProxy)
 	// mux.Handle("/v1/summary", summaryProxy)
 
-	// wrappedMux := &handlers.CORS{Handler: mux}
-	wrappedMux := &handlers.CORS{Handler: r}
+	wrappedMux := &handlers.CORS{Handler: mux}
 
 	log.Printf("Server is listening at %s", addr)
 	log.Fatal(http.ListenAndServeTLS(addr, tlsCertPath, tlsKeyPath, wrappedMux)) // add tls?
