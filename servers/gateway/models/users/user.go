@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"net/mail"
+	"strconv"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
@@ -17,13 +18,14 @@ var bcryptCost = 13
 
 //User represents a user account in the database
 type User struct {
-	ID        int64  `json:"id"`
-	Email     string `json:"-"` //never JSON encoded/decoded
-	PassHash  []byte `json:"-"` //never JSON encoded/decoded
-	UserName  string `json:"userName"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	PhotoURL  string `json:"photoURL"`
+	ID          int64  `json:"id"`
+	Email       string `json:"-"` //never JSON encoded/decoded
+	PassHash    []byte `json:"-"` //never JSON encoded/decoded
+	UserName    string `json:"userName"`
+	FirstName   string `json:"firstName"`
+	LastName    string `json:"lastName"`
+	PhotoURL    string `json:"photoURL"`
+	PhoneNumber string `json:"phoneNumber"`
 }
 
 //Credentials represents user sign-in credentials
@@ -40,12 +42,14 @@ type NewUser struct {
 	UserName     string `json:"userName"`
 	FirstName    string `json:"firstName"`
 	LastName     string `json:"lastName"`
+	PhoneNumber  string `json:"phoneNumber"`
 }
 
 //Updates represents allowed updates to a user profile
 type Updates struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
+	FirstName   string `json:"firstName"`
+	LastName    string `json:"lastName"`
+	PhoneNumber string `json:"phoneNumber"`
 }
 
 //Validate validates the new user and returns an error if
@@ -54,6 +58,18 @@ func (nu *NewUser) Validate() error {
 	_, err := mail.ParseAddress(nu.Email)
 	if err != nil {
 		return fmt.Errorf("email not valid")
+
+	}
+
+	_, err = strconv.ParseInt(nu.PhoneNumber, 10, 64)
+	// if err != nil {
+	// 	http.Error(w, fmt.Sprintf("error converting provided User ID from url to int64: %v", err), http.StatusNotAcceptable)
+	// 	return
+
+	// }
+
+	if len(nu.PhoneNumber) < 10 || err != nil {
+		return fmt.Errorf("please enter a valid phone number")
 
 	}
 
@@ -91,11 +107,14 @@ func (nu *NewUser) ToUser() (*User, error) {
 
 	}
 
+	phone := "+1" + nu.PhoneNumber
+
 	newUserStruct := &User{
-		Email:     nu.Email,
-		UserName:  nu.UserName,
-		FirstName: nu.FirstName,
-		LastName:  nu.LastName,
+		Email:       nu.Email,
+		UserName:    nu.UserName,
+		FirstName:   nu.FirstName,
+		LastName:    nu.LastName,
+		PhoneNumber: phone,
 	}
 
 	newUserStruct.PhotoURL = fmt.Sprintf("%s%s", gravatarBasePhotoURL, fmt.Sprintf("%x", md5.Sum([]byte(strings.ToLower(strings.TrimSpace(newUserStruct.Email))))))
@@ -164,7 +183,14 @@ func (u *User) ApplyUpdates(updates *Updates) error {
 		return fmt.Errorf("no updates made")
 
 	}
-	
+
+	_, err := strconv.ParseInt(updates.PhoneNumber, 10, 64)
+
+	if len(updates.PhoneNumber < 10) || err != nil {
+		return fmt.Errorf("enter a valid phone number")
+
+	}
+
 	if strings.ContainsAny(updates.FirstName, "1234567890") {
 		return fmt.Errorf("first name cannot contain any numbers")
 
@@ -173,6 +199,7 @@ func (u *User) ApplyUpdates(updates *Updates) error {
 
 	}
 
+	u.PhoneNumber = "+1" + updates.PhoneNumber
 	u.FirstName = updates.FirstName
 	u.LastName = updates.LastName
 

@@ -17,7 +17,7 @@ type SQLStore struct {
 // 	as a struct. Sends an error if user is not in the database or there
 // 	are errors when scanning the database rows
 func (ss *SQLStore) GetByID(id int64) (*User, error) {
-	rows, err := ss.DbStore.Query("select id,email,passhash,username,first_name,last_name,photourl from users where id=?", id)
+	rows, err := ss.DbStore.Query("select id,email,passhash,username,first_name,last_name,photourl,phonenumber from users where id=?", id)
 
 	if rows == nil || err != nil {
 		return nil, ErrUserNotFound
@@ -30,7 +30,7 @@ func (ss *SQLStore) GetByID(id int64) (*User, error) {
 
 	for rows.Next() {
 		if err := rows.Scan(&getUser.ID, &getUser.Email, &getUser.PassHash,
-			&getUser.UserName, &getUser.FirstName, &getUser.LastName, &getUser.PhotoURL); err != nil {
+			&getUser.UserName, &getUser.FirstName, &getUser.LastName, &getUser.PhotoURL, &getUser.PhoneNumber); err != nil {
 			return nil, fmt.Errorf("error scanning row: %v\n", err)
 		}
 
@@ -44,7 +44,7 @@ func (ss *SQLStore) GetByID(id int64) (*User, error) {
 // 	as a struct. Sends an error if user is not in the database or there
 // 	are errors when scanning the database rows
 func (ss *SQLStore) GetByEmail(email string) (*User, error) {
-	rows, err := ss.DbStore.Query("select id,email,passhash,username,first_name,last_name,photourl from users where email=?", email)
+	rows, err := ss.DbStore.Query("select id,email,passhash,username,first_name,last_name,photourl,phonenumber from users where email=?", email)
 
 	if rows == nil || err != nil {
 		return nil, ErrUserNotFound
@@ -57,7 +57,7 @@ func (ss *SQLStore) GetByEmail(email string) (*User, error) {
 
 	for rows.Next() {
 		if err := rows.Scan(&getUser.ID, &getUser.Email, &getUser.PassHash,
-			&getUser.UserName, &getUser.FirstName, &getUser.LastName, &getUser.PhotoURL); err != nil {
+			&getUser.UserName, &getUser.FirstName, &getUser.LastName, &getUser.PhotoURL, &getUser.PhoneNumber); err != nil {
 			return nil, fmt.Errorf("error scanning row: %v\n", err)
 		}
 
@@ -71,7 +71,7 @@ func (ss *SQLStore) GetByEmail(email string) (*User, error) {
 // 	as a struct. Sends an error if user is not in the database or there
 // 	are errors when scanning the database rows
 func (ss *SQLStore) GetByUserName(username string) (*User, error) {
-	rows, err := ss.DbStore.Query("select id,email,passhash,username,first_name,last_name,photourl from users where username=?", username)
+	rows, err := ss.DbStore.Query("select id,email,passhash,username,first_name,last_name,photourl,phonenumber from users where username=?", username)
 
 	if rows == nil || err != nil {
 		return nil, ErrUserNotFound
@@ -84,7 +84,7 @@ func (ss *SQLStore) GetByUserName(username string) (*User, error) {
 
 	for rows.Next() {
 		if err := rows.Scan(&getUser.ID, &getUser.Email, &getUser.PassHash,
-			&getUser.UserName, &getUser.FirstName, &getUser.LastName, &getUser.PhotoURL); err != nil {
+			&getUser.UserName, &getUser.FirstName, &getUser.LastName, &getUser.PhotoURL, &getUser.PhoneNumber); err != nil {
 			return nil, fmt.Errorf("error scanning row: %v\n", err)
 		}
 
@@ -98,8 +98,8 @@ func (ss *SQLStore) GetByUserName(username string) (*User, error) {
 // 	the user added with their new DBMS assigned ID. Returns error if user
 // 	cannot be added to the database.
 func (ss *SQLStore) Insert(user *User) (*User, error) {
-	insq := "insert into users(email, first_name, last_name, username, passhash, photourl) values (?, ?, ?, ?, ?, ?)" // regexp.QuoteMeta("insert into users(email, first_name, last_name, username, passhash, photourl) values (?, ?, ?, ?, ?, ?)")
-	res, err := ss.DbStore.Exec(insq, user.Email, user.FirstName, user.LastName, user.UserName, user.PassHash, user.PhotoURL)
+	insq := "insert into users(email, first_name, last_name, username, passhash, photourl, phonenumber) values (?, ?, ?, ?, ?, ?, ?)" // regexp.QuoteMeta("insert into users(email, first_name, last_name, username, passhash, photourl) values (?, ?, ?, ?, ?, ?)")
+	res, err := ss.DbStore.Exec(insq, user.Email, user.FirstName, user.LastName, user.UserName, user.PassHash, user.PhotoURL, user.PhoneNumber)
 	if err != nil {
 		return nil, ErrInvalidInsert
 
@@ -121,9 +121,9 @@ func (ss *SQLStore) Insert(user *User) (*User, error) {
 // 	and returns the newly-updated user. Returns error if the user is
 // 	not in the database
 func (ss *SQLStore) Update(id int64, updates *Updates) (*User, error) {
-	insq := "update users set first_name = ?, last_name = ? where id = ?"
+	insq := "update users set first_name = ?, last_name = ?, phonenumber = ? where id = ?"
 
-	_, err := ss.DbStore.Exec(insq, updates.FirstName, updates.LastName, id)
+	_, err := ss.DbStore.Exec(insq, updates.FirstName, updates.LastName, updates.PhoneNumber, id)
 	if err != nil {
 		return nil, ErrUserDNE
 
