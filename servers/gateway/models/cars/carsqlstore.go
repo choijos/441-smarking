@@ -15,9 +15,9 @@ type SQLStore struct { // probably need to figure out how to import this from th
 // InsertCar adds the given car to the database. Returns the car struct
 // 	with its new DBMS assigned ID. Returns error if the user has already registered
 // 	this car before
-func (ss *SQLStore) InsertCar(newCar *Car) (*Car, error) {
+func (ss *SQLStore) InsertCar(newCar *Car, userid int64) (*Car, error) {
 	// might have to check before the actual executed query if the licenseplate is already registered with this particular user?
-	_, err := ss.DbStore.Query("select count(*) as carcount from cars where UserID = ? and LicensePlate = ?", newCar.UserID, newCar.LicensePlate)
+	_, err := ss.DbStore.Query("select count(*) as carcount from cars where UserID = ? and LicensePlate = ?", userid, newCar.LicensePlate)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 
@@ -29,7 +29,7 @@ func (ss *SQLStore) InsertCar(newCar *Car) (*Car, error) {
 	}
 
 	ins := "insert into cars(LicensePlate, UserID, Make, Model, ModelYear, Color) values (?, ?, ?, ?, ?, ?, ?)"
-	res, err := ss.DbStore.Exec(ins, newCar.LicensePlate, newCar.UserID, newCar.Make, newCar.Model, newCar.ModelYear, newCar.Color)
+	res, err := ss.DbStore.Exec(ins, newCar.LicensePlate, userid, newCar.Make, newCar.Model, newCar.ModelYear, newCar.Color)
 	if err != nil {
 		return nil, err
 
@@ -42,6 +42,7 @@ func (ss *SQLStore) InsertCar(newCar *Car) (*Car, error) {
 	}
 
 	newCar.ID = id
+	newCar.UserID = userid
 
 	return newCar, nil
 

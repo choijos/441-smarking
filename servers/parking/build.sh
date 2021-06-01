@@ -1,7 +1,7 @@
-docker build -t pbatalov/messaging .
+docker build -t pbatalov/parking .
 
 
-docker push pbatalov/messaging
+docker push pbatalov/parking
 
-ssh ec2-user@api.pavelsrinidhi.me < deploy.sh
+ssh ec2-user@api.vanessasgh.me < deploy.sh
 

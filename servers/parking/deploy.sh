@@ -1,14 +1,14 @@
 
 
-docker pull pbatalov/messaging
+docker pull pbatalov/parking
 
 export MESSAGESADDR=:80
 
-docker rm -f messaging
+docker rm -f parking
 
 docker run -d \
-    -e MESSAGESADDR=$MESSAGESADDR \
-    --name messaging \
-    --network customNet \
-    pbatalov/messaging
+    -e PARKINGADDR=$PARKINGADDR \
+    --name parking \
+    --network info441network \
+    pbatalov/parking
 exit

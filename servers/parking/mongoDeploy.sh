@@ -3,5 +3,5 @@ docker rm -f customMongoContainer
 
 docker run -d \
   --name customMongoContainer \
-  --network customNet \
+  --network info441network \
   mongo

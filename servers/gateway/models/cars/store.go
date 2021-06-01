@@ -15,7 +15,7 @@ var ErrInvalidCar = errors.New("invalid car")
 //Store represents a store for Cars
 type Store interface {
 	// InsertCar inserts the user's car
-	InsertCar(newCar *Car) (*Car, error)
+	InsertCar(newCar *Car, userid int64) (*Car, error)
 	// GetCarByID returns the car with the given id
 	GetCarByID(id int64) (*Car, error)
 	// GetCarsByUserID returns a slice of all the cars they have registered
