@@ -5,10 +5,10 @@ const express = require("express");
 var mysql = require("mysql");
 
 var connection = mysql.createConnection({
-  host: "db",
+  host: "finaldb",
   user: "root",
   password: "password",
-  database: "db",
+  database: "finaldb",
   insecureAuth: true,
 });
 
@@ -31,7 +31,7 @@ const {
 
 const mongoEndpoint = "mongodb://customMongoContainer:27017/test"; // test is name of database
 
-const addr = process.env.MESSAGESADDR || ":80";
+const addr = process.env.PARKINGADDR || ":80";
 const [host, port] = addr.split(":");
 
 const Parking = mongoose.model("Parking", parkingSchema);
