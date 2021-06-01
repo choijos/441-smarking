@@ -1,8 +1,8 @@
 GOOS=linux go build
-docker build -t choijos/choijos.me .
+docker build -t pbatalov/finalgateway .
 go clean
 
-docker push choijos/choijos.me
+docker push pbatalov/finalgateway
 
 exit
 # docker build -t choijos/choijos.me .

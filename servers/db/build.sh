@@ -1,7 +1,7 @@
-GOOS=linux go build
-docker build -t choijos/sqla4 .
-go clean
 
-docker push choijos/sqla4
+docker build -t pbatalov/finaldb .
+
+docker push pbatalov/finaldb
+
 
 exit

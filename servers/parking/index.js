@@ -80,25 +80,25 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
 // Requests
 //  Parking
 app.post(
-  "/v1/users/:id/parking",
+  "/v1/usersparking/:id/",
   RequestWrapper(postParkingHandler, { Parking })
 );
 app.get(
-  "/v1/users/:id/parking",
+  "/v1/usersparking/:id/",
   RequestWrapper(getParkingHandler, { Parking })
 );
 
 // Spec. Parking
 app.get(
-  "/v1/users/:id/parking/:parkid",
+  "/v1/parking/:parkid",
   RequestWrapper(getSpecParkingHandler, { Parking })
 );
 app.patch(
-  "/v1/users/:id/parking/:parkid",
+  "/v1/parking/:parkid",
   RequestWrapper(patchSpecParkingHandler, { Parking })
 );
 app.delete(
-  "/v1/users/:id/parking/:parkid",
+  "/v1/parking/:parkid",
   RequestWrapper(deleteSpecParkingHandler, { Parking })
 );
 

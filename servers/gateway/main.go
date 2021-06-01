@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"strings"
@@ -18,9 +19,8 @@ import (
 	"github.com/choijos/assignments-choijos/servers/gateway/models/users"
 	"github.com/choijos/assignments-choijos/servers/gateway/sessions"
 	"github.com/go-redis/redis"
-	"github.com/gorilla/mux"
 	_ "github.com/go-sql-driver/mysql"
-
+	"github.com/gorilla/mux"
 )
 
 // Director is the director used for routing to microservices
@@ -97,15 +97,9 @@ func main() {
 	  the root handler. Use log.Fatal() to report any errors
 	  that occur when trying to start the web server.
 	*/
-	messagesAddr := os.Getenv("MESSAGESADDR")
-	if len(messagesAddr) == 0 {
+	parkingAddr := os.Getenv("PARKINGADDR")
+	if len(parkingAddr) == 0 {
 		log.Fatal("No message address environment variable set")
-
-	}
-
-	summaryAddr := os.Getenv("SUMMARYADDR")
-	if len(summaryAddr) == 0 {
-		log.Fatal("No summary address environment variable set")
 
 	}
 
@@ -168,16 +162,22 @@ func main() {
 	// summaryURLs := getURLs(summaryAddr)
 	// messagesProxy := &httputil.ReverseProxy{Director: CustomDirector(messagesURLs, newCtx)}
 	// summaryProxy := &httputil.ReverseProxy{Director: CustomDirector(summaryURLs, newCtx)}
+	parkingURLs := getURLs(parkingAddr)
+	parkingProxy := &httputil.ReverseProxy{Director: CustomDirector(parkingURLs, newCtx)}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/users", newCtx.UsersHandler)
-	r.HandleFunc("/users/", newCtx.SpecificUserHandler)
-	r.HandleFunc("/sessions", newCtx.SessionsHandler)
-	r.HandleFunc("/sessions/", newCtx.SpecificSessionHandler)
+	r.HandleFunc("/v1/users", newCtx.UsersHandler)
+	r.HandleFunc("/v1/users/", newCtx.SpecificUserHandler)
+	r.HandleFunc("/v1/sessions", newCtx.SessionsHandler)
+	r.HandleFunc("/v1/sessions/", newCtx.SpecificSessionHandler)
 
 	// new stuff for assignment
-	r.HandleFunc("/users/{id}/cars", newCtx.UserCarsHandler)
-	r.HandleFunc("/users/{id}/cars/{carid}", newCtx.SpecificUserCarHandler)
+	r.HandleFunc("/v1/users/{id}/cars", newCtx.UserCarsHandler)
+	r.HandleFunc("/v1/users/{id}/cars/{carid}", newCtx.SpecificUserCarHandler)
+
+	r.Handle("/v1/usersparking/", parkingProxy)
+	r.Handle("/v1/parking/", parkingProxy)
+	
 
 	// mux.Handle("/v1/channels", messagesProxy) // double check the round robin stuff
 	// mux.Handle("/v1/channels/", messagesProxy)
