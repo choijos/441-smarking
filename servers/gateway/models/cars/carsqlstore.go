@@ -28,7 +28,7 @@ func (ss *SQLStore) InsertCar(newCar *Car, userid int64) (*Car, error) {
 
 	}
 
-	ins := "insert into cars(LicensePlate, UserID, Make, Model, ModelYear, Color) values (?, ?, ?, ?, ?, ?, ?)"
+	ins := "insert into cars(LicensePlate, UserID, Make, Model, ModelYear, Color) values (?, ?, ?, ?, ?, ?)"
 	res, err := ss.DbStore.Exec(ins, newCar.LicensePlate, userid, newCar.Make, newCar.Model, newCar.ModelYear, newCar.Color)
 	if err != nil {
 		return nil, err
