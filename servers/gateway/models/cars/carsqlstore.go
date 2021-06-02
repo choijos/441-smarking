@@ -23,7 +23,7 @@ func (ss *SQLStore) InsertCar(newCar *Car, userid int64) (*Car, error) {
 
 	}
 
-	if err == sql.ErrNoRows {
+	if err != sql.ErrNoRows {
 		return nil, ErrAlrRegist
 
 	}
