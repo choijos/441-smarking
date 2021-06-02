@@ -59,7 +59,7 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
     }
 
     connection.query(
-      "SELECT ID, Email FROM `Users` WHERE `ID` = ?",
+      "select id, email, phonenumber from users where id = ?",
       [user.id],
       (err, results, fields) => {
         if (err) throw err;
@@ -68,7 +68,7 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
           return;
         }
 
-        let insertUser = { _id: results[0].ID, email: results[0].Email };
+        let insertUser = { _id: results[0].id, email: results[0].email, phonenumber: results[0].phonenumber };
 
         SchemeAndDbForwarder.user = insertUser;
         handler(req, res, SchemeAndDbForwarder);
