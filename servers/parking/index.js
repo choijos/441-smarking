@@ -27,12 +27,19 @@ const {
   getSpecParkingHandler,
   patchSpecParkingHandler,
   deleteSpecParkingHandler,
+  invalidMethod,
 } = require("./handlers/handlers");
 
 const mongoEndpoint = "mongodb://customMongoContainer:27017/test"; // test is name of database
 
 const addr = process.env.PARKINGADDR || ":80";
 const [host, port] = addr.split(":");
+
+// Getting twilio info
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+
+const client = require("twilio")(accountSid, authToken);
 
 const Parking = mongoose.model("Parking", parkingSchema);
 
@@ -47,6 +54,31 @@ app.use((err, req, res, next) => {
   res.set("Content-Type", "text/plain");
   res.status(500).send("Server experienced an error");
 });
+
+const smsNotif = async (sec, phone) => {
+  timer = setTimeout(() => { // So this will have to be some sort of callback function for event handlers - when the client presses the start button or something, this function should start so maybe shouldn't be it's own endpoint/microservice?
+    let msgBody = secs + " seconds have elapsed";
+    client.messages
+      .create({
+        body: msgBody,
+        from: '+12512734782', // set as environment variable later?
+        to: phone // get from db
+      })
+      .then(message => console.log(message.sid));
+  }, (sec * 1000));
+
+  return stop;
+
+  function stop() {
+    if (timer) {
+      clearTimeout(timer);
+      timer = 0;
+
+    }
+
+  }
+
+};
 
 // Request Wrapper
 const RequestWrapper = (handler, SchemeAndDbForwarder) => {
@@ -63,7 +95,7 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
       [user.id],
       (err, results, fields) => {
         if (err) throw err;
-        if (results == null) {
+        if (results == null || results.length == 0) {
           res.status(404).send("User not found");
           return;
         }
@@ -71,7 +103,8 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
         let insertUser = { _id: results[0].id, email: results[0].email, phonenumber: results[0].phonenumber };
 
         SchemeAndDbForwarder.user = insertUser;
-        handler(req, res, SchemeAndDbForwarder);
+        handler(req, res, SchemeAndDbForwarder, smsNotif);
+
       }
     );
   };
@@ -87,6 +120,14 @@ app.get(
   "/v1/usersparking/:id/",
   RequestWrapper(getParkingHandler, { Parking })
 );
+app.patch(
+  "/v1/usersparking/:id/",
+  RequestWrapper(invalidMethod, {})
+);
+app.delete(
+  "/v1/usersparking/:id/",
+  RequestWrapper(invalidMethod, {})
+);
 
 // Spec. Parking
 app.get(
@@ -100,6 +141,10 @@ app.patch(
 app.delete(
   "/v1/parking/:parkid",
   RequestWrapper(deleteSpecParkingHandler, { Parking })
+);
+app.post(
+  "/v1/parking/:parkid",
+  RequestWrapper(invalidMethod, {})
 );
 
 const connect = () => {
