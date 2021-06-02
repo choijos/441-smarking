@@ -1,5 +1,5 @@
 // Parking
-const postParkingHandler = async (req, res, { Parking, user }) => {
+const postParkingHandler = async (req, res, { Parking, user }, timerFunc) => {
   if (req.get("Content-Type") != "application/json") {
     res.status(415).send("Must be JSON");
   }
@@ -16,9 +16,12 @@ const postParkingHandler = async (req, res, { Parking, user }) => {
   }
 
   const startTime = new Date();
+  // where is endtime coming from?
 
   newParking.startTime = startTime;
   newParking.owner = user;
+
+  let stop = timerFunc(10, user.phonenumber); // call stop() to stop the timer?
 
   const query = new Parking(newParking);
   query.save((err, p) => {
@@ -77,7 +80,7 @@ const patchSpecParkingHandler = async (req, res, { Parking, user }) => {
       return;
     }
 
-    if (newPark.endTime) parking.endTime = newPark.endTime;
+    // if (newPark.endTime) parking.endTime = newPark.endTime;
     if (newPark.notes) parking.notes = newPark.notes;
 
     await parking.save();
@@ -106,10 +109,17 @@ const deleteSpecParkingHandler = async (req, res, { Parking, user }) => {
   }
 };
 
+const invalidMethod = async (req, res, {}) => {
+  res.status(405).send("This method is not allowed");
+  return;
+  
+}
+
 module.exports = {
   postParkingHandler,
   getParkingHandler,
   getSpecParkingHandler,
   patchSpecParkingHandler,
   deleteSpecParkingHandler,
+  invalidMethod
 };
