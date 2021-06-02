@@ -6,5 +6,9 @@ export default {
     myprofile: "/users/me",
     session: "/sessions",
     mysession: "/sessions/mine",
+    cars: "/cars",
+    carspec: "/cars/",
+    usersparking: "/usersparking",
+    parking: "/parking/",
   },
 };

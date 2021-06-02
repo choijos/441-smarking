@@ -2,12 +2,12 @@
 
 docker pull pbatalov/parking
 
-export MESSAGESADDR=:80
+export PARKINGOWNADDR=:80
 
 docker rm -f parking
 
 docker run -d \
-    -e PARKINGADDR=$PARKINGADDR \
+    -e PARKINGADDR=$PARKINGOWNADDR \
     --name parking \
     --network info441network \
     pbatalov/parking

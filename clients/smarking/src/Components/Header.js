@@ -25,7 +25,7 @@ const Header = ({ user, setUser }) => {
               <Nav.Link>About</Nav.Link>
             </LinkContainer>
           </Nav>
-          <Nav inline>
+          <Nav>
             {!user && (
               <Button
                 className="searchbtn"
@@ -42,9 +42,12 @@ const Header = ({ user, setUser }) => {
                     <Nav.Link>New Parking</Nav.Link>
                   </LinkContainer>
                 </Nav>
-                <NavDropdown alignRight title="Profile" id="basic-nav-dropdown">
+                <NavDropdown title="Profile" id="basic-nav-dropdown">
+                  <LinkContainer to="/cars">
+                    <NavDropdown.Item>My Cars</NavDropdown.Item>
+                  </LinkContainer>
                   <LinkContainer to="/settings">
-                    <NavDropdown.Item alignRight>Settings</NavDropdown.Item>
+                    <NavDropdown.Item>Settings</NavDropdown.Item>
                   </LinkContainer>
                   <NavDropdown.Divider />
                   <SignOutButton setUser={setUser} />

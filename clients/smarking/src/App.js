@@ -6,6 +6,7 @@ import api from "./APIEndpoints.js";
 import Header from "./Components/Header.js";
 import Settings from "./Components/Settings.js";
 import Parking from "./Components/Parking.js";
+import Cars from "./Components/Cars.js";
 import About from "./Components/About.js";
 import SignIn from "./Auth/Components/SignIn/SignIn.js";
 import SignUp from "./Auth/Components/SignUp/SignUp.js";
@@ -46,8 +47,13 @@ const App = () => {
         <Switch>
           <Route exact path="/" component={About} />
           <Route exact path="/about" component={About} />
-          <Route exact path="/settings" component={Settings} />
+          <Route
+            exact
+            path="/settings"
+            render={() => <Settings user={user} setUser={setUser} />}
+          />
           <Route path="/parking" component={Parking} />
+          <Route path="/cars" component={Cars} />
           <Route path="/signin">
             <SignIn setUser={setUser} />
           </Route>

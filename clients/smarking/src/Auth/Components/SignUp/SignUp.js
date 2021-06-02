@@ -25,6 +25,9 @@ class SignUp extends Component {
     this.state = {
       email: "",
       userName: "",
+      firstName: "",
+      lastName: "",
+      phoneNumber: "",
       password: "",
       passwordConf: "",
       error: "",
@@ -39,6 +42,18 @@ class SignUp extends Component {
       {
         name: "Username",
         key: "userName",
+      },
+      {
+        name: "First Name",
+        key: "firstName",
+      },
+      {
+        name: "Last Name",
+        key: "lastName",
+      },
+      {
+        name: "Phone Number",
+        key: "phoneNumber",
       },
       {
         name: "Password",
@@ -70,13 +85,25 @@ class SignUp extends Component {
    */
   submitForm = async (e) => {
     e.preventDefault();
-    const { email, userName, password, passwordConf } = this.state;
-    const sendData = {
+    const {
       email,
       userName,
+      firstName,
+      lastName,
+      phoneNumber,
       password,
       passwordConf,
+    } = this.state;
+    const sendData = {
+      email: email,
+      userName: userName,
+      firstName: firstName,
+      lastName: lastName,
+      phoneNumber: phoneNumber,
+      password: password,
+      passwordConf: passwordConf,
     };
+    console.log(sendData);
     const response = await fetch(api.base + api.handlers.users, {
       method: "POST",
       body: JSON.stringify(sendData),

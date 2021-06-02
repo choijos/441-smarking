@@ -21,7 +21,7 @@ function About() {
         }}
       >
         Never lose your car again <br />
-        with <red style={{ color: "#009999" }}>Smarking</red>
+        with <span style={{ color: "#009999" }}>Smarking</span>
       </h1>
       <Row style={{ marginTop: "30px" }}>
         <Col md={7}>
@@ -153,7 +153,7 @@ function About() {
         }}
       >
         Take charge of your new parking experiences with{" "}
-        <red style={{ color: "#009999" }}>Smarking</red>.<br /> The
+        <span style={{ color: "#009999" }}>Smarking</span>.<br /> The
         revolutionary parking focused site.
       </p>
       <Row className="d-flex justify-content-center"></Row>
