@@ -159,7 +159,14 @@ func (ctx *HandlerContext) SpecificUserHandler(w http.ResponseWriter, r *http.Re
 
 		err = sess.AuthUser.ApplyUpdates(upd)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("error applying updates to current user: %v", err), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("error applying updates to current user: %v", err), http.StatusBadRequest)
+			return
+
+		}
+		
+		_, err := ctx.UserStore.Update(sess.AuthUser.ID, upd)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 
 		}
