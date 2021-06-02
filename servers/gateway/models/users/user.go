@@ -186,7 +186,7 @@ func (u *User) ApplyUpdates(updates *Updates) error {
 
 	_, err := strconv.ParseInt(updates.PhoneNumber, 10, 64)
 
-	if len(updates.PhoneNumber < 10) || err != nil {
+	if len(updates.PhoneNumber) < 10 || err != nil {
 		return fmt.Errorf("enter a valid phone number")
 
 	}
