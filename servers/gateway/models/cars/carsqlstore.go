@@ -10,14 +10,14 @@ type SQLStore struct { // probably need to figure out how to import this from th
 	DbStore *sql.DB
 }
 
-// For this function, we might have to pull the userid from the currently authenticated user rather than passing it in as a parameter?
+// For this function, we might have to pull the userid from the currently enticated user rather than passing it in as a parameter?
 //
 // InsertCar adds the given car to the database. Returns the car struct
 // 	with its new DBMS assigned ID. Returns error if the user has already registered
 // 	this car before
 func (ss *SQLStore) InsertCar(newCar *Car, userid int64) (*Car, error) {
 	// might have to check before the actual executed query if the licenseplate is already registered with this particular user?
-	_, err := ss.DbStore.Query("select count(*) as carcount from cars where UserID = ? and LicensePlate = ?", userid, newCar.LicensePlate)
+	_, err := ss.DbStore.Query("select ID, LicensePlate from cars where UserID = ? and LicensePlate = ?", userid, newCar.LicensePlate)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 
