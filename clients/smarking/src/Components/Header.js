@@ -39,7 +39,7 @@ const Header = ({ user, setUser }) => {
               <React.Fragment>
                 <Nav>
                   <LinkContainer to="/parking">
-                    <Nav.Link>New Parking</Nav.Link>
+                    <Nav.Link>Current Parking</Nav.Link>
                   </LinkContainer>
                 </Nav>
                 <NavDropdown title="Profile" id="basic-nav-dropdown">

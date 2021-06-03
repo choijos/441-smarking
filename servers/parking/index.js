@@ -58,16 +58,17 @@ app.use((err, req, res, next) => {
 });
 
 const smsNotif = async (sec, phone) => {
-  timer = setTimeout(() => { // So this will have to be some sort of callback function for event handlers - when the client presses the start button or something, this function should start so maybe shouldn't be it's own endpoint/microservice?
+  timer = setTimeout(() => {
+    // So this will have to be some sort of callback function for event handlers - when the client presses the start button or something, this function should start so maybe shouldn't be it's own endpoint/microservice?
     let msgBody = secs + " seconds have elapsed";
     client.messages
       .create({
         body: msgBody,
-        from: '+12512734782', // set as environment variable later?
-        to: phone // get from db
+        from: "+12512734782", // set as environment variable later?
+        to: phone, // get from db
       })
-      .then(message => console.log(message.sid));
-  }, (sec * 1000));
+      .then((message) => console.log(message.sid));
+  }, sec * 1000);
 
   return stop;
 
@@ -75,11 +76,8 @@ const smsNotif = async (sec, phone) => {
     if (timer) {
       clearTimeout(timer);
       timer = 0;
-
     }
-
   }
-
 };
 
 // Request Wrapper
@@ -102,11 +100,15 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
           return;
         }
 
-        let insertUser = { _id: results[0].id, email: results[0].email, phonenumber: results[0].phonenumber };
+        let insertUser = {
+          _id: results[0].id,
+          email: results[0].email,
+          phonenumber: results[0].phonenumber,
+        };
 
         SchemeAndDbForwarder.user = insertUser;
-        handler(req, res, SchemeAndDbForwarder, smsNotif);
-
+        SchemeAndDbForwarder.smsNotif = smsNotif;
+        handler(req, res, SchemeAndDbForwarder);
       }
     );
   };
@@ -114,22 +116,10 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
 
 // Requests
 //  Parking
-app.post(
-  "/v1/usersparking",
-  RequestWrapper(postParkingHandler, { Parking })
-);
-app.get(
-  "/v1/usersparking",
-  RequestWrapper(getParkingHandler, { Parking })
-);
-app.patch(
-  "/v1/usersparking",
-  RequestWrapper(invalidMethod, {})
-);
-app.delete(
-  "/v1/usersparking",
-  RequestWrapper(invalidMethod, {})
-);
+app.post("/v1/usersparking", RequestWrapper(postParkingHandler, { Parking }));
+app.get("/v1/usersparking", RequestWrapper(getParkingHandler, { Parking }));
+app.patch("/v1/usersparking", RequestWrapper(invalidMethod, {}));
+app.delete("/v1/usersparking", RequestWrapper(invalidMethod, {}));
 
 // Spec. Parking
 app.get(
@@ -144,10 +134,7 @@ app.delete(
   "/v1/parking/:parkid",
   RequestWrapper(deleteSpecParkingHandler, { Parking })
 );
-app.post(
-  "/v1/parking/:parkid",
-  RequestWrapper(invalidMethod, {})
-);
+app.post("/v1/parking/:parkid", RequestWrapper(invalidMethod, {}));
 
 const connect = () => {
   mongoose.connect(mongoEndpoint);

@@ -6,12 +6,15 @@ import { Redirect } from "react-router-dom";
 
 const Settings = ({ user, setUser }) => {
   const [form, setForm] = useState({
-    firstName: user.firstName,
-    lastName: user.lastName,
-    phoneNumber: user.phoneNumber,
+    firstName: user ? user.firstName : null,
+    lastName: user ? user.lastName : null,
+    phoneNumber: user ? user.phoneNumber : null,
   });
   const [errors, setErrors] = useState({});
 
+  if (!user) {
+    return <p>Loading...</p>;
+  }
   const setField = (field, value) => {
     setForm({
       ...form,
@@ -44,12 +47,8 @@ const Settings = ({ user, setUser }) => {
       return;
     }
     const newUser = await response.json();
-    console.log(newUser);
     setUser(newUser);
   };
-  if (!user) {
-    return <p>Loading...</p>;
-  }
 
   return (
     <div>

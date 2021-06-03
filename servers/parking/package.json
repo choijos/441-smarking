@@ -14,7 +14,8 @@
     "express": "^4.17.1",
     "mongoose": "^5.12.10",
     "morgan": "^1.10.0",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "twilio": "^3.63.1"
   },
   "devDependencies": {
     "nodemon": "^1.19.4"

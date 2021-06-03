@@ -1,5 +1,5 @@
 // Parking
-const postParkingHandler = async (req, res, { Parking, user }, timerFunc) => {
+const postParkingHandler = async (req, res, { Parking, user, smsNotif }) => {
   if (req.get("Content-Type") != "application/json") {
     res.status(415).send("Must be JSON");
   }
@@ -21,7 +21,7 @@ const postParkingHandler = async (req, res, { Parking, user }, timerFunc) => {
   newParking.startTime = startTime;
   newParking.owner = user;
 
-  let stop = timerFunc(10, user.phonenumber); // call stop() to stop the timer?
+  //let stop = smsNotif(10, user.phonenumber); // call stop() to stop the timer?
 
   const query = new Parking(newParking);
   query.save((err, p) => {
@@ -112,8 +112,7 @@ const deleteSpecParkingHandler = async (req, res, { Parking, user }) => {
 const invalidMethod = async (req, res, {}) => {
   res.status(405).send("This method is not allowed");
   return;
-  
-}
+};
 
 module.exports = {
   postParkingHandler,
@@ -121,5 +120,5 @@ module.exports = {
   getSpecParkingHandler,
   patchSpecParkingHandler,
   deleteSpecParkingHandler,
-  invalidMethod
+  invalidMethod,
 };

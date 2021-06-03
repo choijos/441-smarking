@@ -38,7 +38,7 @@ const App = () => {
   useEffect(() => {
     let authToken = localStorage.getItem("Authorization");
     getCurrentUser(authToken).then((result) => setUser(result));
-  }, [user]);
+  }, []);
 
   return (
     <div className="App">
