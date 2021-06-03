@@ -21,22 +21,6 @@ const getCurrentParking = async () => {
   return parking;
 };
 
-const getCurrentCars = async () => {
-  const response = await fetch(api.base + api.handlers.cars, {
-    method: "GET",
-    headers: new Headers({
-      Authorization: localStorage.getItem("Authorization"),
-    }),
-  });
-  if (response.status >= 300) {
-    const error = await response.text();
-    console.log(error);
-    return;
-  }
-  const cars = await response.json();
-  return cars;
-};
-
 function Parking() {
   const [cars, setCars] = useState();
   const [parkings, setParkings] = useState();
@@ -59,6 +43,26 @@ function Parking() {
     getCurrentCars().then((result) => setCars(result));
   }, []);
 
+  const getCurrentCars = async () => {
+    const response = await fetch(api.base + api.handlers.cars, {
+      method: "GET",
+      headers: new Headers({
+        Authorization: localStorage.getItem("Authorization"),
+      }),
+    });
+    if (response.status >= 300) {
+      const error = await response.text();
+      console.log(error);
+      return;
+    }
+    const cars = await response.json();
+    setForm({
+      ...form,
+      ["carID"]: cars[0].id,
+    });
+    return cars;
+  };
+
   const submitForm = async (e) => {
     e.preventDefault();
 
@@ -68,8 +72,6 @@ function Parking() {
       alert("must provide a valid datetime!");
       return;
     }
-
-    console.log(send);
     const response = await fetch(api.base + api.handlers.usersparking, {
       method: "POST",
       body: JSON.stringify(send),
@@ -90,7 +92,9 @@ function Parking() {
   const deleteParking = async (id) => {
     const response = await fetch(api.base + api.handlers.parking + id, {
       method: "PATCH",
+      body: JSON.stringify({ isComplete: true }),
       headers: new Headers({
+        "Content-Type": "application/json",
         Authorization: localStorage.getItem("Authorization"),
       }),
     });
@@ -117,7 +121,6 @@ function Parking() {
               <ListGroup>
                 {parkings.map((p, i) => {
                   const car = cars.find((c) => c.id == p.carID);
-                  console.log(cars);
                   if (!p.isComplete && car) {
                     return (
                       <ListGroup.Item key={i}>
@@ -132,9 +135,10 @@ function Parking() {
                             " " +
                             car.model}
                         </h2>
-                        <p>Start time: {p.startTime}</p>
+                        <p>Start time: {Date(p.startTime).toString()}</p>
                         <p>Notes: {p.notes}</p>
-                        <Countdown date={p.endTime} />,
+                        <Countdown date={p.endTime} />
+                        <br />
                         <Button
                           variant="success"
                           onClick={() => {
