@@ -118,7 +118,7 @@ function Parking() {
                 {parkings.map((p, i) => {
                   const car = cars.find((c) => c.id == p.carID);
                   console.log(cars);
-                  if (!p.isCompleted && car) {
+                  if (!p.isComplete && car) {
                     return (
                       <ListGroup.Item key={i}>
                         <h2>
