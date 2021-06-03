@@ -62,6 +62,7 @@ const smsNotif = (endTime, phone, parkid) => {
   console.log("yes interval timer is starting")
   let sentPrem = false;
   let now = new Date();
+  let endDate = new Date(endTime);
   let total = (endDate.getTime() - now.getTime()) / 1000;
   let short = false;
   if (total <= 350) {
