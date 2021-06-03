@@ -17,13 +17,24 @@ type SQLStore struct { // probably need to figure out how to import this from th
 // 	this car before
 func (ss *SQLStore) InsertCar(newCar *Car, userid int64) (*Car, error) {
 	// might have to check before the actual executed query if the licenseplate is already registered with this particular user?
-	_, err := ss.DbStore.Query("select ID, LicensePlate from cars where UserID = ? and LicensePlate = ?", userid, newCar.LicensePlate)
-	if err != nil && err != sql.ErrNoRows {
+	rows, err := ss.DbStore.Query("select ID, LicensePlate from cars where UserID = ? and LicensePlate = ?", userid, newCar.LicensePlate)
+	if err != nil {
 		return nil, err
 
 	}
 
-	if err != sql.ErrNoRows {
+	testCar := Car{}
+
+	for rows.Next() {
+		err := rows.Scan(&testCar.ID)
+		if err != nil {
+			return nil, ErrAlrRegist
+
+		}
+
+	}
+
+	if (Car{}) != testCar {
 		return nil, ErrAlrRegist
 
 	}
@@ -54,15 +65,24 @@ func (ss *SQLStore) InsertCar(newCar *Car, userid int64) (*Car, error) {
 // 	the given ID
 func (ss *SQLStore) GetCarByID(id int64) (*Car, error) {
 	rows, err := ss.DbStore.Query("select ID, LicensePlate, UserID, Make, Model, ModelYear, Color from cars where ID = ?", id)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil {
 		return nil, fmt.Errorf("unable to grab car of given id: %v", err)
 
 	}
 
-	if err == sql.ErrNoRows {
-		return nil, ErrInvalidCar
+	// testCar := Car{}
 
-	}
+	// for rows.Next() {
+	// 	err = rows.Scan(&testCar.ID)
+	// 	if err == sql.ErrNoRows {
+	// 		return nil, ErrAlrRegist
+
+	// 	} else if err != nil {
+	// 		return nil, err
+
+	// 	}
+
+	// }
 
 	defer rows.Close()
 
@@ -73,6 +93,11 @@ func (ss *SQLStore) GetCarByID(id int64) (*Car, error) {
 			return nil, fmt.Errorf("error scanning row: %v", err)
 
 		}
+
+	}
+
+	if (Car{}) == retCar {
+		return nil, ErrInvalidCar
 
 	}
 
@@ -96,15 +121,24 @@ func (ss *SQLStore) GetCarsByUserID(userid int64) ([]*Car, error) {
 	allCars := []*Car{}
 	for rows.Next() {
 		oneCar := Car{}
+		// if err := rows.Scan(); err == sql.ErrNoRows {
+		// 	return nil, ErrInvalidCar
+
+		// }
 		err := rows.Scan(&oneCar.ID, &oneCar.LicensePlate, &oneCar.UserID, &oneCar.Make, &oneCar.Model, &oneCar.ModelYear, &oneCar.Color)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning row: %v", err)
 
-		}
+		} 
 
 		allCars = append(allCars, &oneCar)
 
 	}
+
+	// if (Car{}) == theCar {
+	// 	return nil, ErrInvalidCar
+
+	// }
 
 	return allCars, nil
 
@@ -116,13 +150,8 @@ func (ss *SQLStore) GetCarsByUserID(userid int64) ([]*Car, error) {
 // 	car with the given ID for the user
 func (ss *SQLStore) GetSpecificUserCar(userid int64, carid int64) (*Car, error) {
 	rows, err := ss.DbStore.Query("select ID, LicensePlate, UserID, Make, Model, ModelYear, Color from cars where ID = ? and UserID = ?", carid, userid)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil {
 		return nil, ErrNoCars
-
-	}
-
-	if err == sql.ErrNoRows {
-		return nil, ErrInvalidCar
 
 	}
 
@@ -138,6 +167,11 @@ func (ss *SQLStore) GetSpecificUserCar(userid int64, carid int64) (*Car, error) 
 
 	}
 
+	if (Car{}) == theCar {
+		return nil, ErrInvalidCar
+
+	}
+
 	return &theCar, nil
 
 }
@@ -145,53 +179,64 @@ func (ss *SQLStore) GetSpecificUserCar(userid int64, carid int64) (*Car, error) 
 // UpdateCar applies the passed in updates for this car registered under the user in the database,
 // 	returns the updated car's information in a Car struct
 func (ss *SQLStore) UpdateCar(updates *UpdateCar, carid int64, userid int64) (*Car, error) {
+	// _, err := ss.GetSpecificUserCar(userid, carid)
+	// if err != nil {
+	// 	return nil, err
+
+	// }
+
 	if updates == nil {
 		return nil, fmt.Errorf("no updates made")
 
 	}
-	// // fields that are left empty will return empty string when accessed
-	//
-	// Not sure if we need to build this up with only the filled out fields, depends on the ui i think
-	//
-	// ups := "update cars set"
-	// toUpd := []string{}
-	// count := 0
 
-	// if updates.LicensePlate != "" {
-	// 	ups += "LicensePlate = ?,"
-
-	// }
-
-	// if updates.Make != "" {
-	// 	ups += "Make = ?,"
-
-	// }
-
-	// if updates.Model != "" {
-	// 	ups += "Model = ?,"
-
-	// }
-
-	// if updates.ModelYear != "" {
-	// 	ups += "ModelYear = ?,"
-
-	// }
-
-	// if updates.Color != "" {
-	// 	ups += "Color = ?,"
-
-	// }
-
-	// ups = ups[:len(ups)-1] // removing teh last comma thing
-	ins := "update cars set LicensePlate = ?, Make = ?, Model = ?, ModelYear = ?, Color = ? where ID = ? and UserID = ?"
-	_, err := ss.DbStore.Exec(ins, updates.LicensePlate, updates.Make, updates.Model, updates.ModelYear, updates.Color, carid, userid)
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
+	if updates.LicensePlate != "" {
+		ins := "update cars set LicensePlate = ? where ID = ? and UserID = ?"
+		_, err := ss.DbStore.Exec(ins, updates.LicensePlate, carid, userid)
+		if err != nil {
+			return nil, ErrNoCars // check
+	
+		}
 
 	}
 
-	if err == sql.ErrNoRows {
-		return nil, ErrInvalidCar
+	if updates.Make != "" {
+		ins := "update cars set Make = ? where ID = ? and UserID = ?"
+		_, err := ss.DbStore.Exec(ins, updates.Make, carid, userid)
+		if err != nil {
+			return nil, ErrNoCars // check
+	
+		}
+
+	}
+
+	if updates.Model != "" {
+		ins := "update cars set Model = ? where ID = ? and UserID = ?"
+		_, err := ss.DbStore.Exec(ins, updates.Model, carid, userid)
+		if err != nil {
+			return nil, ErrNoCars // check
+	
+		}
+
+	}
+
+	if updates.ModelYear != "" {
+		ins := "update cars set ModelYear = ? where ID = ? and UserID = ?"
+		_, err := ss.DbStore.Exec(ins, updates.ModelYear, carid, userid)
+		if err != nil {
+			return nil, ErrNoCars // check
+	
+		}
+
+	}
+
+	if updates.Color != "" {
+		ins := "update cars set Color = ? where ID = ? and UserID = ?"
+		_, err := ss.DbStore.Exec(ins, updates.Color, carid, userid)
+		if err != nil {
+			return nil, ErrNoCars // check
+	
+		}
 
 	}
 

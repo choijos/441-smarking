@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/choijos/assignments-choijos/servers/gateway/models/cars"
-	"github.com/choijos/assignments-choijos/servers/gateway/models/users"
-	"github.com/choijos/assignments-choijos/servers/gateway/sessions"
+	
+  "github.com/choijos/assignments-choijos/servers/gateway/models/cars"
+  "github.com/choijos/assignments-choijos/servers/gateway/models/users"
+  "github.com/choijos/assignments-choijos/servers/gateway/sessions"
 )
 
 // UsersHandler handles user requests such as adding new users
@@ -459,9 +459,16 @@ func (ctx *HandlerContext) SpecificUserCarHandler(w http.ResponseWriter, r *http
 
 		}
 
+		_, err := ctx.CarStore.GetSpecificUserCar(sessUserID, carID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+	
+		}
+
 		upCar, err := ctx.CarStore.UpdateCar(upd, carID, sessUserID)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("error getting car with id %d for user %d: %v", carID, sessUserID, err), http.StatusInternalServerError) // might be client error instead?
+			http.Error(w, err.Error(), http.StatusInternalServerError) // might be client error instead?
 			return
 
 		}
@@ -477,7 +484,14 @@ func (ctx *HandlerContext) SpecificUserCarHandler(w http.ResponseWriter, r *http
 		w.Header().Set("Content-Type", "application/json")
 
 	} else if r.Method == "DELETE" {
-		err := ctx.CarStore.DeleteCarForUser(sessUserID, carID)
+		_, err := ctx.CarStore.GetSpecificUserCar(sessUserID, carID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+
+		}
+
+		err = ctx.CarStore.DeleteCarForUser(sessUserID, carID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest) // check the err returning for this function, and also if it would be a server or client error
 			return
