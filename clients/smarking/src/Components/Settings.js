@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import api from "../APIEndpoints.js";
-import { Redirect } from "react-router-dom";
 
 const Settings = ({ user, setUser }) => {
   const [form, setForm] = useState({

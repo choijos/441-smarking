@@ -7,7 +7,7 @@ import { Redirect } from "react-router-dom";
 
 const SignOutButton = ({ setUser }) => {
   const [error, setError] = useState("");
-  const [redir, setRedir] = false;
+  const [redir, setRedir] = useState(false);
 
   return (
     <div className="sign-out">
@@ -28,9 +28,9 @@ const SignOutButton = ({ setUser }) => {
             return;
           }
           localStorage.removeItem("Authorization");
+          setRedir(true);
           setError("");
           setUser(null);
-          setRedir(true);
         }}
       >
         Sign out
