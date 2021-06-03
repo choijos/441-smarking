@@ -39,6 +39,7 @@ const [host, port] = addr.split(":");
 // Getting twilio info
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
+const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
 
 const client = require("twilio")(accountSid, authToken);
 
@@ -57,28 +58,64 @@ app.use((err, req, res, next) => {
   res.status(500).send("Server experienced an error");
 });
 
-const smsNotif = async (sec, phone) => {
-  timer = setTimeout(() => {
-    // So this will have to be some sort of callback function for event handlers - when the client presses the start button or something, this function should start so maybe shouldn't be it's own endpoint/microservice?
-    let msgBody = secs + " seconds have elapsed";
-    client.messages
-      .create({
-        body: msgBody,
-        from: "+12512734782", // set as environment variable later?
-        to: phone, // get from db
-      })
-      .then((message) => console.log(message.sid));
-  }, sec * 1000);
+const smsNotif = (endTime, phone, parkid) => {
+  console.log("yes interval timer is starting")
+  let sentPrem = false;
+  let now = new Date();
+  let total = (endDate.getTime() - now.getTime()) / 1000;
+  let short = false;
+  if (total <= 350) {
+    short = true;
 
-  return stop;
-
-  function stop() {
-    if (timer) {
-      clearTimeout(timer);
-      timer = 0;
-    }
   }
-};
+
+  let interv = setInterval(() => {
+    console.log("interval again")
+    let endDate = new Date(endTime);
+    let now = new Date();
+    let secLeft = (endDate.getTime() - now.getTime()) / 1000;
+
+    if (!short && secLeft <= 300 && !sentPrem) {
+      let msgBody = "You have 5 minutes remaining in your parking session [" + parkid + "]";
+      client.messages
+        .create({
+          body: msgBody,
+          from: twilioPhone,
+          to: phone,
+        })
+        .then((message) => {
+          console.log(message.sid)
+          sentPrem = true;
+
+        });
+
+    } else if (secLeft <= 1) {
+      let msgBody = "Your parking session has ended [" + parkid + "]";
+      client.messages
+        .create({
+          body: msgBody,
+          from: twilioPhone,
+          to: phone,
+        })
+        .then((message) => {
+          console.log(message.sid)
+
+          Parking.findByIdAndUpdate(parkid, { isComplete: true }, function (err, doc) {
+            if (err) {
+              res.status(500).send("There was an error updating this parking session");
+              return;
+
+            }
+
+          });
+          
+          clearInterval(interv);
+
+        });
+
+    }
+  }, 4000);
+}
 
 // Request Wrapper
 const RequestWrapper = (handler, SchemeAndDbForwarder) => {
@@ -123,7 +160,7 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
         };
 
         SchemeAndDbForwarder.user = insertUser;
-        SchemeAndDbForwarder.uCars = userCars; //
+        SchemeAndDbForwarder.uCars = userCars;
         SchemeAndDbForwarder.smsNotif = smsNotif;
         handler(req, res, SchemeAndDbForwarder);
       }

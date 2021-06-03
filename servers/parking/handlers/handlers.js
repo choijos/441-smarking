@@ -34,7 +34,7 @@ const postParkingHandler = async (req, res, { Parking, user, uCars, smsNotif }) 
     return;
 
   }
-
+  
   // checking if there is currently a parking session that hasn't been completed
   let carPark = await Parking.find({ carID: convCar }, function (err, docs) {
     if (err) {
@@ -55,24 +55,32 @@ const postParkingHandler = async (req, res, { Parking, user, uCars, smsNotif }) 
 
   }
 
-  const startTime = new Date(); // endTime is in newParking already
+  const startTime = new Date();
 
+  console.log("yeah we got here")
+  console.log(newParking.endTime);
 
+  let stringTime = newParking.endTime;
+
+  newParking.endTime = new Date(stringTime);
   newParking.startTime = startTime;
   newParking.owner = user;
   newParking.isComplete = false;
 
-  //let stop = smsNotif(10, user.phonenumber); // call stop() to stop the timer?
-
   const query = new Parking(newParking);
-  query.save((err, p) => {
+  await query.save((err, p) => {
     if (err) {
       res.status(500).send("Unable to create a parking");
       return;
     }
 
     res.status(201).set("Content-Type", "application/json").json(p);
+
   });
+
+  // TWILIO WORK
+  smsNotif(newParking.endTime, user.phonenumber, query._id);
+
 };
 
 const getParkingHandler = async (req, res, { Parking, user }) => {
@@ -104,7 +112,7 @@ const patchSpecParkingHandler = async (req, res, { Parking, user }) => {
     const parking = await Parking.find({ _id: req.params.parkid });
 
     if (
-      !(parking[0].owner._id == user._id && parking[0].owner.email == user.email)
+      !(parking[0].owner._id == user._id && parking[0].owner.email == user.email) //
     ) {
       res.status(403).send("You did not create this parking");
       return;
@@ -117,7 +125,7 @@ const patchSpecParkingHandler = async (req, res, { Parking, user }) => {
     let newPark = req.body;
 
     if (!newPark) {
-      res.status(400).send("Must provide a new channel");
+      res.status(400).send("No updates to make");
       return;
     }
 
@@ -137,6 +145,7 @@ const patchSpecParkingHandler = async (req, res, { Parking, user }) => {
     res.status(200).set("Content-Type", "application/json").json(pk);
 
   } catch (e) {
+    console.log(e)
     res.status(404).send("Could not find Parking with id " + req.params.parkid);
     return;
   }
@@ -144,10 +153,10 @@ const patchSpecParkingHandler = async (req, res, { Parking, user }) => {
 
 const deleteSpecParkingHandler = async (req, res, { Parking, user }) => {
   try {
-    const parking = await Parking.find({ _id: req.params.parkid });
+    const parking = await Parking.findOne({ _id: req.params.parkid });
 
     if (
-      !(parking.owner[0]._id == user._id && parking.owner[0].email == user.email)
+      !(parking[0].owner._id == user._id && parking[0].owner.email == user.email)
     ) {
       res.status(403).send("You did not create this parking");
       return;
