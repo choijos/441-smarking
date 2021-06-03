@@ -90,6 +90,22 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
       return;
     }
 
+    let userCars = [];
+
+    connection.query(
+      "select ID from cars where UserID = ?", //
+      [user.id],
+      (err, results, fields) => {
+        if (err) throw err;
+        for (let i = 0; i < results.length; i++) {
+          userCars.push(results[i].ID);
+
+        }
+
+      }
+
+    );
+
     connection.query(
       "select id, email, phonenumber from users where id = ?",
       [user.id],
@@ -99,7 +115,7 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
           res.status(404).send("User not found");
           return;
         }
-
+        
         let insertUser = {
           _id: results[0].id,
           email: results[0].email,
@@ -107,6 +123,7 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
         };
 
         SchemeAndDbForwarder.user = insertUser;
+        SchemeAndDbForwarder.uCars = userCars; //
         SchemeAndDbForwarder.smsNotif = smsNotif;
         handler(req, res, SchemeAndDbForwarder);
       }

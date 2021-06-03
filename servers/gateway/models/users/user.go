@@ -186,11 +186,11 @@ func (u *User) ApplyUpdates(updates *Updates) error {
 
 	_, err := strconv.ParseInt(updates.PhoneNumber, 10, 64)
 
-	if len(updates.PhoneNumber) < 10 || err != nil {
-		return fmt.Errorf("enter a valid phone number")
+	if updates.PhoneNumber[:1] != "+" || len(updates.PhoneNumber) < 12 || err != nil { // accounting for +_
+		return fmt.Errorf("enter a valid phone number (include + country code)")
 
 	}
-
+	
 	if strings.ContainsAny(updates.FirstName, "1234567890") {
 		return fmt.Errorf("first name cannot contain any numbers")
 

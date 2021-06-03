@@ -1,5 +1,5 @@
 // Parking
-const postParkingHandler = async (req, res, { Parking, user, smsNotif }) => {
+const postParkingHandler = async (req, res, { Parking, user, uCars, smsNotif }) => {
   if (req.get("Content-Type") != "application/json") {
     res.status(415).send("Must be JSON");
   }
@@ -15,8 +15,48 @@ const postParkingHandler = async (req, res, { Parking, user, smsNotif }) => {
     return;
   }
 
-  const startTime = new Date();
-  // where is endtime coming from?
+  if (newParking.endTime == null) {
+    res.status(400).send("Please specify an end time for this parking session");
+    return;
+
+  }
+
+  let convCar = Number(req.body.carID);
+  if (convCar == NaN) {
+    res.status(400).send("Valid Car must be specified");
+    return;
+
+  }
+
+  // checking if this car belongs to this user
+  if (!uCars.includes(convCar)) {
+    res.status(400).send("Car provided is not a car you have registered");
+    return;
+
+  }
+
+  // checking if there is currently a parking session that hasn't been completed
+  let carPark = await Parking.find({ carID: convCar }, function (err, docs) {
+    if (err) {
+      res.status(500).send("There was an error retrieving parking");
+      return;
+
+    }
+
+  });
+
+  for (let i = 0; i < carPark.length; i++) {
+    let currPark = carPark[i];
+    if (!currPark.isComplete) {
+      res.status(400).send("There is already a parking session ongoing with this car");
+      return;
+
+    }
+
+  }
+
+  const startTime = new Date(); // endTime is in newParking already
+
 
   newParking.startTime = startTime;
   newParking.owner = user;
