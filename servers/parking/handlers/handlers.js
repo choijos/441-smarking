@@ -20,6 +20,7 @@ const postParkingHandler = async (req, res, { Parking, user, smsNotif }) => {
 
   newParking.startTime = startTime;
   newParking.owner = user;
+  newParking.isComplete = false;
 
   //let stop = smsNotif(10, user.phonenumber); // call stop() to stop the timer?
 
@@ -60,10 +61,10 @@ const getSpecParkingHandler = async (req, res, { Parking, user }) => {
 
 const patchSpecParkingHandler = async (req, res, { Parking, user }) => {
   try {
-    const parking = await Parking.findOne({ _id: req.params.parkid });
+    const parking = await Parking.find({ _id: req.params.parkid });
 
     if (
-      !(parking.owner._id == user._id && parking.creator.email == user.email)
+      !(parking[0].owner._id == user._id && parking[0].owner.email == user.email)
     ) {
       res.status(403).send("You did not create this parking");
       return;
@@ -81,10 +82,20 @@ const patchSpecParkingHandler = async (req, res, { Parking, user }) => {
     }
 
     // if (newPark.endTime) parking.endTime = newPark.endTime;
-    if (newPark.notes) parking.notes = newPark.notes;
+    // if (newPark.notes) parking.notes = newPark.notes;
+    if (newPark.isComplete) parking.isComplete = newPark.isComplete;
 
-    await parking.save();
-    res.status(200).set("Content-Type", "application/json").json(channel);
+    let pk = await Parking.findByIdAndUpdate(req.params.parkid, { isComplete: req.body.isComplete }, function (err, docs) {
+      if (err) {
+        res.status(500).send("There was an error making parking changes");
+        return;
+
+      }
+
+    });
+
+    res.status(200).set("Content-Type", "application/json").json(pk);
+
   } catch (e) {
     res.status(404).send("Could not find Parking with id " + req.params.parkid);
     return;
@@ -93,10 +104,10 @@ const patchSpecParkingHandler = async (req, res, { Parking, user }) => {
 
 const deleteSpecParkingHandler = async (req, res, { Parking, user }) => {
   try {
-    const parking = await Parking.findOne({ _id: req.params.parkid });
+    const parking = await Parking.find({ _id: req.params.parkid });
 
     if (
-      !(parking.owner._id == user._id && parking.creator.email == user.email)
+      !(parking.owner[0]._id == user._id && parking.owner[0].email == user.email)
     ) {
       res.status(403).send("You did not create this parking");
       return;
