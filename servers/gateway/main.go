@@ -165,7 +165,7 @@ func main() {
 	mux.HandleFunc("/v1/cars", newCtx.UserCarsHandler)
 	mux.HandleFunc("/v1/cars/", newCtx.SpecificUserCarHandler)
 
-	mux.Handle("/v1/usersparking/", parkingProxy)
+	mux.Handle("/v1/usersparking", parkingProxy)
 	mux.Handle("/v1/parking/", parkingProxy)
 
 	// mux.Handle("/v1/channels", messagesProxy) // double check the round robin stuff

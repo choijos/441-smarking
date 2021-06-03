@@ -3,12 +3,15 @@ import PropTypes from "prop-types";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import api from "../APIEndpoints";
 import Errors from "../Errors/Errors.js";
+import { Redirect } from "react-router-dom";
 
 const SignOutButton = ({ setUser }) => {
   const [error, setError] = useState("");
+  const [redir, setRedir] = false;
 
   return (
     <div className="sign-out">
+      {redir && <Redirect to="/" />}
       <NavDropdown.Item
         onClick={async (e) => {
           e.preventDefault();
@@ -27,6 +30,7 @@ const SignOutButton = ({ setUser }) => {
           localStorage.removeItem("Authorization");
           setError("");
           setUser(null);
+          setRedir(true);
         }}
       >
         Sign out
