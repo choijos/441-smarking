@@ -101,7 +101,7 @@ func (ss *SQLStore) Insert(user *User) (*User, error) {
 	insq := "insert into users(email, first_name, last_name, username, passhash, photourl, phonenumber) values (?, ?, ?, ?, ?, ?, ?)" // regexp.QuoteMeta("insert into users(email, first_name, last_name, username, passhash, photourl) values (?, ?, ?, ?, ?, ?)")
 	res, err := ss.DbStore.Exec(insq, user.Email, user.FirstName, user.LastName, user.UserName, user.PassHash, user.PhotoURL, user.PhoneNumber)
 	if err != nil {
-		return nil, ErrInvalidInsert
+		return nil, fmt.Errorf("this email and/or username is already associated with an account")
 
 	}
 

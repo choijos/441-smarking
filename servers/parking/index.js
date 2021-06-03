@@ -2,6 +2,7 @@
 
 const mongoose = require("mongoose");
 const express = require("express");
+const morgan = require("morgan");
 var mysql = require("mysql");
 
 var connection = mysql.createConnection({
@@ -47,6 +48,7 @@ const app = express();
 
 // Add middleware
 app.use(express.json());
+app.use(morgan("dev"));
 app.use((err, req, res, next) => {
   console.error(err);
   console.error(err.stack);
@@ -113,19 +115,19 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
 // Requests
 //  Parking
 app.post(
-  "/v1/usersparking/:id/",
+  "/v1/usersparking",
   RequestWrapper(postParkingHandler, { Parking })
 );
 app.get(
-  "/v1/usersparking/:id/",
+  "/v1/usersparking",
   RequestWrapper(getParkingHandler, { Parking })
 );
 app.patch(
-  "/v1/usersparking/:id/",
+  "/v1/usersparking",
   RequestWrapper(invalidMethod, {})
 );
 app.delete(
-  "/v1/usersparking/:id/",
+  "/v1/usersparking",
   RequestWrapper(invalidMethod, {})
 );
 
