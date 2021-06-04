@@ -26,6 +26,14 @@ const Settings = ({ user, setUser }) => {
 
     let { firstName, lastName, phoneNumber } = form;
     phoneNumber = phoneNumber.replace(/\D/g, "");
+    if (phoneNumber.length < 10 || phoneNumber.length > 14) {
+      this.setError("Phone number must be valid!");
+      return;
+    }
+    if (phoneNumber.length == 7) {
+      phoneNumber = "1" + phoneNumber;
+    }
+
     const sendData = {
       firstName: firstName,
       lastName: lastName,

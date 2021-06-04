@@ -8,3 +8,5 @@ docker run \
     -p 80:80 -p 443:443 \
     -v /etc/letsencrypt:/etc/letsencrypt:ro \
     pbatalov/finalclient
+    
+exit

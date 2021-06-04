@@ -85,7 +85,7 @@ class SignUp extends Component {
    */
   submitForm = async (e) => {
     e.preventDefault();
-    const {
+    let {
       email,
       userName,
       firstName,
@@ -94,6 +94,15 @@ class SignUp extends Component {
       password,
       passwordConf,
     } = this.state;
+    phoneNumber = phoneNumber.replace(/\D/g, "");
+    if (phoneNumber.length < 10 || phoneNumber.length > 14) {
+      this.setError("Phone number must be valid!");
+      return;
+    }
+    if (phoneNumber.length == 10) {
+      phoneNumber = "1" + phoneNumber;
+    }
+
     const sendData = {
       email: email,
       userName: userName,

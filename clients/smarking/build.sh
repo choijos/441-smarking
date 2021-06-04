@@ -1,3 +1,5 @@
+npm run-script build
+
 docker build -t pbatalov/finalclient .
 
 docker push pbatalov/finalclient
