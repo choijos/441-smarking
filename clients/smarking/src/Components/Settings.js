@@ -43,7 +43,7 @@ const Settings = ({ user, setUser }) => {
       lastName: lastName,
       phoneNumber: "+" + phoneNumber,
     };
-    console.log(sendData);
+
     const response = await fetch(api.base + api.handlers.myprofile, {
       method: "PATCH",
       body: JSON.stringify(sendData),
@@ -54,7 +54,7 @@ const Settings = ({ user, setUser }) => {
     });
     if (response.status >= 300) {
       const error = await response.text();
-      console.log(error);
+      alert(error);
       return;
     }
     const newUser = await response.json();

@@ -14,7 +14,7 @@ const getCurrentParking = async () => {
   });
   if (response.status >= 300) {
     const error = await response.text();
-    console.log(error);
+    alert(error);
     return;
   }
   const parking = await response.json();
@@ -52,7 +52,7 @@ function Parking() {
     });
     if (response.status >= 300) {
       const error = await response.text();
-      console.log(error);
+      alert(error);
       return;
     }
     const cars = await response.json();
@@ -82,7 +82,7 @@ function Parking() {
     });
     if (response.status >= 300) {
       const error = await response.text();
-      console.log(error);
+      alert(error);
       return;
     }
     const parking = await response.json();
@@ -100,7 +100,7 @@ function Parking() {
     });
     if (response.status >= 300) {
       const error = await response.text();
-      console.log(error);
+      alert(error);
       return;
     }
     const text = await response.text();

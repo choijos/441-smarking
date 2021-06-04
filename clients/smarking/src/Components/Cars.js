@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import api from "../APIEndpoints.js";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import { Alert } from "react-bootstrap";
 
 const getCurrentCars = async () => {
   const response = await fetch(api.base + api.handlers.cars, {
@@ -12,7 +13,7 @@ const getCurrentCars = async () => {
   });
   if (response.status >= 300) {
     const error = await response.text();
-    console.log(error);
+    alert(error);
     return;
   }
   const cars = await response.json();
@@ -49,7 +50,7 @@ const Cars = () => {
     });
     if (response.status >= 300) {
       const error = await response.text();
-      console.log(error);
+      alert(error);
       return;
     }
     const text = await response.text();
@@ -69,7 +70,7 @@ const Cars = () => {
     });
     if (response.status >= 300) {
       const error = await response.text();
-      console.log(error);
+      alert(error);
       return;
     }
     const car = await response.json();
