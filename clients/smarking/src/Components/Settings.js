@@ -25,19 +25,23 @@ const Settings = ({ user, setUser }) => {
     e.preventDefault();
 
     let { firstName, lastName, phoneNumber } = form;
+
+    if (phoneNumber.charAt(0) != "+") {
+      this.setError("Phone number must be valid with country code (e.g. +12061234567)");
+      return;
+
+    }
+
     phoneNumber = phoneNumber.replace(/\D/g, "");
-    if (phoneNumber.length < 10 || phoneNumber.length > 14) {
+    if (phoneNumber.length < 10 || phoneNumber.length > 15) {
       this.setError("Phone number must be valid!");
       return;
-    }
-    if (phoneNumber.length == 7) {
-      phoneNumber = "1" + phoneNumber;
     }
 
     const sendData = {
       firstName: firstName,
       lastName: lastName,
-      phoneNumber: phoneNumber,
+      phoneNumber: "+" + phoneNumber,
     };
     console.log(sendData);
     const response = await fetch(api.base + api.handlers.myprofile, {

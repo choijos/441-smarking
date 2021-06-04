@@ -94,13 +94,17 @@ class SignUp extends Component {
       password,
       passwordConf,
     } = this.state;
+
+    if (phoneNumber.charAt(0) != "+") {
+      this.setError("Phone number must be valid with country code (e.g. +12061234567)");
+      return;
+
+    }
+
     phoneNumber = phoneNumber.replace(/\D/g, "");
-    if (phoneNumber.length < 10 || phoneNumber.length > 14) {
+    if (phoneNumber.length < 10 || phoneNumber.length > 15) {
       this.setError("Phone number must be valid!");
       return;
-    }
-    if (phoneNumber.length == 10) {
-      phoneNumber = "1" + phoneNumber;
     }
 
     const sendData = {
@@ -108,11 +112,11 @@ class SignUp extends Component {
       userName: userName,
       firstName: firstName,
       lastName: lastName,
-      phoneNumber: phoneNumber,
+      phoneNumber: "+" + phoneNumber,
       password: password,
       passwordConf: passwordConf,
     };
-    console.log(sendData);
+
     const response = await fetch(api.base + api.handlers.users, {
       method: "POST",
       body: JSON.stringify(sendData),
@@ -129,7 +133,7 @@ class SignUp extends Component {
     localStorage.setItem("Authorization", authToken);
     this.setError("");
     const user = await response.json();
-    console.log(user);
+
     this.props.setUser(user);
     this.setState({ redir: true });
   };

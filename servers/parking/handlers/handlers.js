@@ -1,5 +1,5 @@
 // Parking
-const postParkingHandler = async (req, res, { Parking, user, uCars, smsNotif }) => {
+const postParkingHandler = async (req, res, { Parking, user, uCars, sms }) => {
   if (req.get("Content-Type") != "application/json") {
     res.status(415).send("Must be JSON");
   }
@@ -29,7 +29,18 @@ const postParkingHandler = async (req, res, { Parking, user, uCars, smsNotif }) 
   }
 
   // checking if this car belongs to this user
-  if (!uCars.includes(convCar)) {
+  let currCar = null;
+  for (let i = 0; i < uCars.length; i++) {
+    let car = uCars[i];
+    if (car.ID == convCar) {
+      currCar = car;
+      break;
+
+    }
+
+  }
+
+  if (!currCar) {
     res.status(400).send("Car provided is not a car you have registered");
     return;
 
@@ -56,10 +67,6 @@ const postParkingHandler = async (req, res, { Parking, user, uCars, smsNotif }) 
   }
 
   const startTime = new Date();
-
-  console.log("yeah we got here")
-  console.log(newParking.endTime);
-
   let stringTime = newParking.endTime;
 
   newParking.endTime = new Date(stringTime);
@@ -79,7 +86,7 @@ const postParkingHandler = async (req, res, { Parking, user, uCars, smsNotif }) 
   });
 
   // TWILIO WORK
-  smsNotif(newParking.endTime, user.phonenumber, query._id);
+  sms.Start(newParking.endTime, user.phonenumber, query._id, currCar);
 
 };
 
@@ -107,7 +114,7 @@ const getSpecParkingHandler = async (req, res, { Parking, user }) => {
   }
 };
 
-const patchSpecParkingHandler = async (req, res, { Parking, user }) => {
+const patchSpecParkingHandler = async (req, res, { Parking, user, sms }) => {
   try {
     const parking = await Parking.find({ _id: req.params.parkid });
 
@@ -129,8 +136,6 @@ const patchSpecParkingHandler = async (req, res, { Parking, user }) => {
       return;
     }
 
-    // if (newPark.endTime) parking.endTime = newPark.endTime;
-    // if (newPark.notes) parking.notes = newPark.notes;
     if (newPark.isComplete) parking.isComplete = newPark.isComplete;
 
     let pk = await Parking.findByIdAndUpdate(req.params.parkid, { isComplete: req.body.isComplete }, function (err, docs) {
@@ -142,10 +147,12 @@ const patchSpecParkingHandler = async (req, res, { Parking, user }) => {
 
     });
 
+    // clearing timeout
+    sms.Stop(req.params.parkid);
+
     res.status(200).set("Content-Type", "application/json").json(pk);
 
   } catch (e) {
-    console.log(e)
     res.status(404).send("Could not find Parking with id " + req.params.parkid);
     return;
   }

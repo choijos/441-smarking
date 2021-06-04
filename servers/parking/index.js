@@ -58,65 +58,79 @@ app.use((err, req, res, next) => {
   res.status(500).send("Server experienced an error");
 });
 
-const smsNotif = (endTime, phone, parkid) => {
-  console.log("yes interval timer is starting")
-  let sentPrem = false;
-  let now = new Date();
-  let endDate = new Date(endTime);
-  let total = (endDate.getTime() - now.getTime()) / 1000;
-  let short = false;
-  if (total <= 350) {
-    short = true;
+const initSms = new Map();
+
+var sms = {
+  Start: (endTime, phone, parkid, currCar) => {
+    let sentPrem = false;
+    let now = new Date();
+    let endDate = new Date(endTime);
+    let total = (endDate.getTime() - now.getTime()) / 1000;
+    let short = false;
+    if (total <= 350) {
+      short = true;
+  
+    }
+
+    let intervalID = setInterval(() => {
+      let endDate = new Date(endTime);
+      let now = new Date();
+      let secLeft = (endDate.getTime() - now.getTime()) / 1000;
+
+      if (!short && secLeft <= 300 && !sentPrem) {
+        let msgBody = "You have 5 minutes remaining in your parking session ("+ currCar.Make + " " + currCar.Model + " - " + currCar.LicensePlate + ") \n[" + parkid + "]";
+        client.messages
+          .create({
+            body: msgBody,
+            from: twilioPhone,
+            to: phone,
+          })
+          .then((message) => {
+            console.log(message.sid)
+            sentPrem = true;
+
+          });
+
+      } else if (secLeft <= 1) {
+        let msgBody = "Your parking session has ended ("+ currCar.Make + " " + currCar.Model + " - " + currCar.LicensePlate + ") \n[" + parkid + "]";
+        client.messages
+          .create({
+            body: msgBody,
+            from: twilioPhone,
+            to: phone,
+          })
+          .then((message) => {
+            console.log(message.sid)
+
+            Parking.findByIdAndUpdate(JSON.parse(parkid), { isComplete: true }, function (err, doc) {
+              if (err) {
+                throw err;
+
+              }
+
+            });
+
+            clearInterval(initSms.get(parkid));
+
+          });
+
+      }
+    }, 4000)
+
+    parkid = JSON.stringify(parkid);
+    initSms.set(parkid, intervalID);
+
+  },
+
+  Stop: (parkid) => {
+    parkid = JSON.stringify(parkid);
+    let intervalID = initSms.get(parkid);
+    clearInterval(intervalID);
+    initSms.delete(parkid);
 
   }
 
-  let interv = setInterval(() => {
-    console.log("interval again")
-    let endDate = new Date(endTime);
-    let now = new Date();
-    let secLeft = (endDate.getTime() - now.getTime()) / 1000;
-
-    if (!short && secLeft <= 300 && !sentPrem) {
-      let msgBody = "You have 5 minutes remaining in your parking session [" + parkid + "]";
-      client.messages
-        .create({
-          body: msgBody,
-          from: twilioPhone,
-          to: phone,
-        })
-        .then((message) => {
-          console.log(message.sid)
-          sentPrem = true;
-
-        });
-
-    } else if (secLeft <= 1) {
-      let msgBody = "Your parking session has ended [" + parkid + "]";
-      client.messages
-        .create({
-          body: msgBody,
-          from: twilioPhone,
-          to: phone,
-        })
-        .then((message) => {
-          console.log(message.sid)
-
-          Parking.findByIdAndUpdate(parkid, { isComplete: true }, function (err, doc) {
-            if (err) {
-              res.status(500).send("There was an error updating this parking session");
-              return;
-
-            }
-
-          });
-          
-          clearInterval(interv);
-
-        });
-
-    }
-  }, 4000);
-}
+};
 
 // Request Wrapper
 const RequestWrapper = (handler, SchemeAndDbForwarder) => {
@@ -131,12 +145,21 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
     let userCars = [];
 
     connection.query(
-      "select ID from cars where UserID = ?", //
+      "select ID, LicensePlate, Make, Model from cars where UserID = ?", //
       [user.id],
       (err, results, fields) => {
         if (err) throw err;
         for (let i = 0; i < results.length; i++) {
-          userCars.push(results[i].ID);
+          let currCar = results[i];
+          let oneCar = {
+            ID: currCar.ID,
+            LicensePlate: currCar.LicensePlate,
+            Make: currCar.Make,
+            Model: currCar.Model
+
+          }
+
+          userCars.push(oneCar);
 
         }
 
@@ -162,7 +185,7 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
 
         SchemeAndDbForwarder.user = insertUser;
         SchemeAndDbForwarder.uCars = userCars;
-        SchemeAndDbForwarder.smsNotif = smsNotif;
+        SchemeAndDbForwarder.sms = sms;
         handler(req, res, SchemeAndDbForwarder);
       }
     );
