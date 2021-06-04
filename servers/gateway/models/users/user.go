@@ -107,7 +107,8 @@ func (nu *NewUser) ToUser() (*User, error) {
 
 	}
 
-	phone := "+1" + nu.PhoneNumber
+	// phone := "+1" + nu.PhoneNumber
+	phone := nu.PhoneNumber
 
 	newUserStruct := &User{
 		Email:       nu.Email,
@@ -199,7 +200,7 @@ func (u *User) ApplyUpdates(updates *Updates) error {
 
 	}
 
-	u.PhoneNumber = "+1" + updates.PhoneNumber
+	u.PhoneNumber = updates.PhoneNumber
 	u.FirstName = updates.FirstName
 	u.LastName = updates.LastName
 

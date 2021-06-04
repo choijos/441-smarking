@@ -37,7 +37,7 @@ func (ctx *HandlerContext) UsersHandler(w http.ResponseWriter, r *http.Request) 
 
 		toUser, err := newUser.ToUser()
 		if err != nil {
-			http.Error(w, fmt.Sprintf("cannot convert to user: %v", err), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 
 		}
@@ -104,7 +104,7 @@ func (ctx *HandlerContext) SpecificUserHandler(w http.ResponseWriter, r *http.Re
 		} else {
 			userid, err := strconv.ParseInt(urlID, 10, 64)
 			if err != nil {
-				http.Error(w, fmt.Sprintf("error converting provided User ID from url to int64: %v", err), http.StatusNotAcceptable)
+				http.Error(w, err.Error(), http.StatusNotAcceptable)
 				return
 
 			}
@@ -419,7 +419,7 @@ func (ctx *HandlerContext) SpecificUserCarHandler(w http.ResponseWriter, r *http
 
 	carID, err := strconv.ParseInt(pathCarID, 10, 64)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error converting provided User ID from url to int64: %v", err), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 
 	}
