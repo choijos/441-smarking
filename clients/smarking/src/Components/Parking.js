@@ -58,7 +58,7 @@ function Parking() {
     const cars = await response.json();
     setForm({
       ...form,
-      ["carID"]: cars[0].id,
+      ["carID"]: cars[0].ID,
     });
     return cars;
   };

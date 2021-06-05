@@ -10,7 +10,7 @@ const Settings = ({ user, setUser }) => {
     lastName: user ? user.lastName : null,
     phoneNumber: user ? user.phoneNumber : null,
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState();
 
   if (!user) {
     return <p>Loading...</p>;
