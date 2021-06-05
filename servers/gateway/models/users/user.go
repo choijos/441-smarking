@@ -160,7 +160,7 @@ func (u *User) SetPassword(password string) error {
 //and returns an error if they don't match, or nil if they do
 func (u *User) Authenticate(password string) error {
 	if err := bcrypt.CompareHashAndPassword(u.PassHash, []byte(password)); err != nil {
-		return fmt.Errorf("Invald password")
+		return fmt.Errorf("Invalid password")
 
 	}
 
