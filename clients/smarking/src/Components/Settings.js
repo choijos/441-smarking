@@ -28,14 +28,15 @@ const Settings = ({ user, setUser }) => {
     let { firstName, lastName, phoneNumber } = form;
 
     if (phoneNumber.charAt(0) != "+") {
-      this.setErrors("Phone number must be valid with country code (e.g. +12061234567)");
+      setErrors(
+        "Phone number must be valid with country code (e.g. +12061234567)"
+      );
       return;
-
     }
 
     phoneNumber = phoneNumber.replace(/\D/g, "");
     if (phoneNumber.length < 10 || phoneNumber.length > 15) {
-      this.setErrors("Phone number must be valid!");
+      setErrors("Phone number must be valid!");
       return;
     }
 
@@ -66,7 +67,7 @@ const Settings = ({ user, setUser }) => {
     <div>
       <h1>Settings</h1>
       <div className="form d-flex justify-content-center">
-        <Errors error={errors} setError={this.setErrors} />
+        <Errors error={errors} setError={setErrors} />
       </div>
       <Form onSubmit={submitForm}>
         <Form.Group controlId="formGroupFirstName">
