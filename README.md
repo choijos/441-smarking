@@ -68,7 +68,7 @@ DELETE /v1/parking/{parkid} (Completely remove the specific parking session)
 
     id int not null REFERENCES users(id),
     whensignin time not null,
-    clientip
+    clientip varchar(255) not null
 
 **Table cars**
 
