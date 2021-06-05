@@ -58,7 +58,7 @@ function Parking() {
     const cars = await response.json();
     setForm({
       ...form,
-      ["carID"]: cars[0].ID,
+      ["carID"]: cars[0].id,
     });
     return cars;
   };
@@ -109,7 +109,7 @@ function Parking() {
 
   return (
     <div>
-      {!parkings || !cars ? (
+      {!parkings ? (
         <p>loading...</p>
       ) : cars.length == 0 ? (
         <h1>Register a car to continue!</h1>
