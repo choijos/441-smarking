@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"fmt"
 	"net/mail"
-	"strconv"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
@@ -61,13 +60,6 @@ func (nu *NewUser) Validate() error {
 
 	}
 
-	_, err = strconv.ParseInt(nu.PhoneNumber, 10, 64)
-	// if err != nil {
-	// 	http.Error(w, fmt.Sprintf("error converting provided User ID from url to int64: %v", err), http.StatusNotAcceptable)
-	// 	return
-
-	// }
-
 	if len(nu.PhoneNumber) < 10 || err != nil {
 		return fmt.Errorf("please enter a valid phone number")
 
@@ -107,7 +99,6 @@ func (nu *NewUser) ToUser() (*User, error) {
 
 	}
 
-	// phone := "+1" + nu.PhoneNumber
 	phone := nu.PhoneNumber
 
 	newUserStruct := &User{
@@ -169,7 +160,7 @@ func (u *User) SetPassword(password string) error {
 //and returns an error if they don't match, or nil if they do
 func (u *User) Authenticate(password string) error {
 	if err := bcrypt.CompareHashAndPassword(u.PassHash, []byte(password)); err != nil {
-		return fmt.Errorf("password doesn't match stored hash")
+		return fmt.Errorf("Invald password")
 
 	}
 
@@ -185,9 +176,7 @@ func (u *User) ApplyUpdates(updates *Updates) error {
 
 	}
 
-	_, err := strconv.ParseInt(updates.PhoneNumber, 10, 64)
-
-	if updates.PhoneNumber[:1] != "+" || len(updates.PhoneNumber) < 12 || err != nil { // accounting for +_
+	if updates.PhoneNumber[:1] != "+" || len(updates.PhoneNumber) < 10 {
 		return fmt.Errorf("enter a valid phone number (include + country code)")
 
 	}

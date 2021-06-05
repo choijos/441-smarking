@@ -60,6 +60,7 @@ app.use((err, req, res, next) => {
 
 const initSms = new Map();
 
+// Creating, storing, and ending parking sessions (for notifications)
 var sms = {
   Start: (endTime, phone, parkid, currCar) => {
     let sentPrem = false;
@@ -92,7 +93,7 @@ var sms = {
           });
 
       } else if (secLeft <= 1) {
-        let msgBody = "Your parking session has ended ("+ currCar.Make + " " + currCar.Model + " - " + currCar.LicensePlate + ") \n[" + parkid + "]";
+        let msgBody = "Smarking: Your parking session has ended\n("+ currCar.Make + " " + currCar.Model + " - " + currCar.LicensePlate + ") \n\n Parking ID: [" + parkid + "]";
         client.messages
           .create({
             body: msgBody,

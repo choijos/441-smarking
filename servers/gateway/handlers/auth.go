@@ -348,7 +348,7 @@ func (ctx *HandlerContext) UserCarsHandler(w http.ResponseWriter, r *http.Reques
 
 		insCar, err := ctx.CarStore.InsertCar(newCar, sessUserID)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest) // will Return AlrRegist if user has already registered this car
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 
 		}
@@ -427,7 +427,7 @@ func (ctx *HandlerContext) SpecificUserCarHandler(w http.ResponseWriter, r *http
 	if r.Method == "GET" {
 		car, err := ctx.CarStore.GetSpecificUserCar(sessUserID, carID)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest) // maybe should be internal status error
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 
 		}
@@ -468,7 +468,7 @@ func (ctx *HandlerContext) SpecificUserCarHandler(w http.ResponseWriter, r *http
 
 		upCar, err := ctx.CarStore.UpdateCar(upd, carID, sessUserID)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError) // might be client error instead?
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 
 		}
@@ -480,7 +480,7 @@ func (ctx *HandlerContext) SpecificUserCarHandler(w http.ResponseWriter, r *http
 
 		}
 
-		w.WriteHeader(http.StatusOK) // might want to move these headers before the encoder?
+		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 
 	} else if r.Method == "DELETE" {
@@ -493,12 +493,12 @@ func (ctx *HandlerContext) SpecificUserCarHandler(w http.ResponseWriter, r *http
 
 		err = ctx.CarStore.DeleteCarForUser(sessUserID, carID)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest) // check the err returning for this function, and also if it would be a server or client error
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 
 		}
 
-		w.Write([]byte("Car successfully removed from this user")) // not sure if we want to write this out here
+		w.Write([]byte("Car successfully removed from this user"))
 
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)

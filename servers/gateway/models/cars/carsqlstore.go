@@ -6,17 +6,14 @@ import (
 )
 
 // SQLStore represents a mysql database containing all cars
-type SQLStore struct { // probably need to figure out how to import this from the users mysqlstore.go
+type SQLStore struct {
 	DbStore *sql.DB
 }
 
-// For this function, we might have to pull the userid from the currently enticated user rather than passing it in as a parameter?
-//
 // InsertCar adds the given car to the database. Returns the car struct
 // 	with its new DBMS assigned ID. Returns error if the user has already registered
 // 	this car before
 func (ss *SQLStore) InsertCar(newCar *Car, userid int64) (*Car, error) {
-	// might have to check before the actual executed query if the licenseplate is already registered with this particular user?
 	rows, err := ss.DbStore.Query("select ID, LicensePlate from cars where UserID = ? and LicensePlate = ?", userid, newCar.LicensePlate)
 	if err != nil {
 		return nil, err
@@ -59,8 +56,6 @@ func (ss *SQLStore) InsertCar(newCar *Car, userid int64) (*Car, error) {
 
 }
 
-// dont know if we actually will need this function
-//
 // GetCarByID returns a Car struct containing the database information on the Car with
 // 	the given ID
 func (ss *SQLStore) GetCarByID(id int64) (*Car, error) {
@@ -69,20 +64,6 @@ func (ss *SQLStore) GetCarByID(id int64) (*Car, error) {
 		return nil, fmt.Errorf("unable to grab car of given id: %v", err)
 
 	}
-
-	// testCar := Car{}
-
-	// for rows.Next() {
-	// 	err = rows.Scan(&testCar.ID)
-	// 	if err == sql.ErrNoRows {
-	// 		return nil, ErrAlrRegist
-
-	// 	} else if err != nil {
-	// 		return nil, err
-
-	// 	}
-
-	// }
 
 	defer rows.Close()
 
@@ -105,8 +86,6 @@ func (ss *SQLStore) GetCarByID(id int64) (*Car, error) {
 
 }
 
-// probably should return an array of structs
-//
 // GetCarsByUserID returns a slice of Car structs containing the information on all
 // 	of the cars this user with the given ID has registered
 func (ss *SQLStore) GetCarsByUserID(userid int64) ([]*Car, error) {
@@ -121,10 +100,6 @@ func (ss *SQLStore) GetCarsByUserID(userid int64) ([]*Car, error) {
 	allCars := []*Car{}
 	for rows.Next() {
 		oneCar := Car{}
-		// if err := rows.Scan(); err == sql.ErrNoRows {
-		// 	return nil, ErrInvalidCar
-
-		// }
 		err := rows.Scan(&oneCar.ID, &oneCar.LicensePlate, &oneCar.UserID, &oneCar.Make, &oneCar.Model, &oneCar.ModelYear, &oneCar.Color)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning row: %v", err)
@@ -135,17 +110,10 @@ func (ss *SQLStore) GetCarsByUserID(userid int64) ([]*Car, error) {
 
 	}
 
-	// if (Car{}) == theCar {
-	// 	return nil, ErrInvalidCar
-
-	// }
-
 	return allCars, nil
 
 }
 
-// Might not want to return all columns?
-//
 // GetSpecificUserCar returns a Car struct containing the database information for the
 // 	car with the given ID for the user
 func (ss *SQLStore) GetSpecificUserCar(userid int64, carid int64) (*Car, error) {
@@ -179,12 +147,6 @@ func (ss *SQLStore) GetSpecificUserCar(userid int64, carid int64) (*Car, error) 
 // UpdateCar applies the passed in updates for this car registered under the user in the database,
 // 	returns the updated car's information in a Car struct
 func (ss *SQLStore) UpdateCar(updates *UpdateCar, carid int64, userid int64) (*Car, error) {
-	// _, err := ss.GetSpecificUserCar(userid, carid)
-	// if err != nil {
-	// 	return nil, err
-
-	// }
-
 	if updates == nil {
 		return nil, fmt.Errorf("no updates made")
 
@@ -194,7 +156,7 @@ func (ss *SQLStore) UpdateCar(updates *UpdateCar, carid int64, userid int64) (*C
 		ins := "update cars set LicensePlate = ? where ID = ? and UserID = ?"
 		_, err := ss.DbStore.Exec(ins, updates.LicensePlate, carid, userid)
 		if err != nil {
-			return nil, ErrNoCars // check
+			return nil, ErrNoCars
 	
 		}
 
@@ -204,7 +166,7 @@ func (ss *SQLStore) UpdateCar(updates *UpdateCar, carid int64, userid int64) (*C
 		ins := "update cars set Make = ? where ID = ? and UserID = ?"
 		_, err := ss.DbStore.Exec(ins, updates.Make, carid, userid)
 		if err != nil {
-			return nil, ErrNoCars // check
+			return nil, ErrNoCars
 	
 		}
 
@@ -214,7 +176,7 @@ func (ss *SQLStore) UpdateCar(updates *UpdateCar, carid int64, userid int64) (*C
 		ins := "update cars set Model = ? where ID = ? and UserID = ?"
 		_, err := ss.DbStore.Exec(ins, updates.Model, carid, userid)
 		if err != nil {
-			return nil, ErrNoCars // check
+			return nil, ErrNoCars
 	
 		}
 
@@ -224,7 +186,7 @@ func (ss *SQLStore) UpdateCar(updates *UpdateCar, carid int64, userid int64) (*C
 		ins := "update cars set ModelYear = ? where ID = ? and UserID = ?"
 		_, err := ss.DbStore.Exec(ins, updates.ModelYear, carid, userid)
 		if err != nil {
-			return nil, ErrNoCars // check
+			return nil, ErrNoCars
 	
 		}
 
@@ -234,7 +196,7 @@ func (ss *SQLStore) UpdateCar(updates *UpdateCar, carid int64, userid int64) (*C
 		ins := "update cars set Color = ? where ID = ? and UserID = ?"
 		_, err := ss.DbStore.Exec(ins, updates.Color, carid, userid)
 		if err != nil {
-			return nil, ErrNoCars // check
+			return nil, ErrNoCars
 	
 		}
 

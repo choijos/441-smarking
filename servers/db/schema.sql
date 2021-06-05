@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     username varchar(255) NOT NULL UNIQUE,
     passhash varchar(60) NOT NULL,
     photourl varchar(128) NOT NULL,
-    phonenumber varchar(15) NOT NULL -- maybe 12 cause +1? Also not unique cause users might have same phone number
+    phonenumber varchar(20) NOT NULL
 );
 
 -- creating table to track user sign-ins

@@ -1,3 +1,3 @@
-# Messaging Microservice
+# Parking Microservice
 
-This directory contains the source code for your messaging microservice
+This directory contains the source code for our parking microservice.

@@ -6,12 +6,10 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"strings"
-
-	// "encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
-	// "github.com/patrickmn/go-cache"
+
 )
 
 const headerAuthorization = "Authorization"
@@ -28,13 +26,6 @@ var ErrInvalidScheme = errors.New("authorization scheme not supported")
 //BeginSession creates a new SessionID, saves the `sessionState` to the store, adds an
 //Authorization header to the response with the SessionID, and returns the new SessionID
 func BeginSession(signingKey string, store Store, sessionState interface{}, w http.ResponseWriter) (SessionID, error) {
-	//TODO:
-	//- create a new SessionID
-	//- save the sessionState to the store
-	//- add a header to the ResponseWriter that looks like this:
-	//    "Authorization: Bearer <sessionID>"
-	//  where "<sessionID>" is replaced with the newly-created SessionID
-	//  (note the constants declared for you above, which will help you avoid typos)
 	if len(signingKey) == 0 {
 		return InvalidSessionID, errors.New("signing key may not be empty")
 
@@ -49,16 +40,11 @@ func BeginSession(signingKey string, store Store, sessionState interface{}, w ht
 	remaining := hmac.New(sha256.New, []byte(signingKey))
 	remaining.Write(randomBytes)
 	remainingBytes := remaining.Sum(nil)
-	// https://stackoverflow.com/questions/16248241/concatenate-two-slices-in-go
 	finalByteSlice := append(randomBytes, remainingBytes...)
 	// Encode the byteslice to Base64 URL Encoded string
 	finalSessionID := SessionID(base64.URLEncoding.EncodeToString(finalByteSlice))
 
 	store.Save(finalSessionID, sessionState)
-
-	// authHeader := headerAuthorization + ": " + schemeBearer + " "
-
-	// w.Header().Add(authHeader, string(finalSessionID))
 	w.Header().Add(headerAuthorization, fmt.Sprintf("%s%s", schemeBearer, string(finalSessionID)))
 
 	return finalSessionID, nil
@@ -66,11 +52,6 @@ func BeginSession(signingKey string, store Store, sessionState interface{}, w ht
 
 //GetSessionID extracts and validates the SessionID from the request headers
 func GetSessionID(r *http.Request, signingKey string) (SessionID, error) {
-	//TODO: get the value of the Authorization header,
-	//or the "auth" query string parameter if no Authorization header is present,
-	//and validate it. If it's valid, return the SessionID. If not
-	//return the validation error.
-	// authHeaderVal := r.Header.Get((headerAuthorization + ": " + schemeBearer + " "))
 	authHeaderVal := r.Header.Get(headerAuthorization) // Bearer <SessionID>
 	if len(authHeaderVal) == 0 {
 		val, valok := r.URL.Query()["auth"]
@@ -116,8 +97,6 @@ func GetSessionID(r *http.Request, signingKey string) (SessionID, error) {
 
 	}
 
-	// return InvalidSessionID, ErrInvalidID
-
 	return InvalidSessionID, fmt.Errorf("Signing key / session id is not valid\n")
 
 }
@@ -126,8 +105,6 @@ func GetSessionID(r *http.Request, signingKey string) (SessionID, error) {
 //gets the associated state from the provided store into
 //the `sessionState` parameter, and returns the SessionID
 func GetState(r *http.Request, signingKey string, store Store, sessionState interface{}) (SessionID, error) {
-	//TODO: get the SessionID from the request, and get the data
-	//associated with that SessionID from the store.
 	sessID := r.Header.Get(headerAuthorization)
 
 	if len(sessID) == 0 {
@@ -159,10 +136,7 @@ func GetState(r *http.Request, signingKey string, store Store, sessionState inte
 //and deletes the associated data in the provided store, returning
 //the extracted SessionID.
 func EndSession(r *http.Request, signingKey string, store Store) (SessionID, error) {
-	//TODO: get the SessionID from the request, and delete the
-	//data associated with it in the store.
 	sessID := r.Header.Get(headerAuthorization)
-	// fmt.Println(sessID)
 
 	if len(sessID) == 0 {
 		return SessionID(sessID), ErrNoSessionID

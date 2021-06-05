@@ -83,7 +83,7 @@ func getURLs(addrString string) []*url.URL {
 
 }
 
-//main is the main entry point for the server
+// main is the main entry point for the server
 func main() {
 	parkingAddr := os.Getenv("PARKINGADDR")
 	if len(parkingAddr) == 0 {
@@ -114,11 +114,11 @@ func main() {
 		DB:   0,
 	})
 
-	newrs := sessions.NewRedisStore(redisDB, time.Hour) // sessionDuration?
+	newrs := sessions.NewRedisStore(redisDB, time.Hour)
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Printf("Cannot open sql store: %v", err) // Might have to change how we respond
+		log.Printf("Cannot open sql store: %v", err)
 		return
 
 	}
@@ -139,17 +139,13 @@ func main() {
 	tlsKeyPath := os.Getenv("TLSKEY")
 	tlsCertPath := os.Getenv("TLSCERT")
 
-	if tlsKeyPath == "" || tlsCertPath == "" { // might have to separate these checks for more tailored error messages
+	if tlsKeyPath == "" || tlsCertPath == "" {
 		log.Printf("TLS key or cert not set as environment variable(s): %d \n TLSKEY: %s \n TLSCERT: %s", http.StatusInternalServerError, tlsKeyPath, tlsCertPath)
 		return
 
 	}
 
-	// // Create URLs for proxies
-	// messagesURLs := getURLs(messagesAddr)
-	// summaryURLs := getURLs(summaryAddr)
-	// messagesProxy := &httputil.ReverseProxy{Director: CustomDirector(messagesURLs, newCtx)}
-	// summaryProxy := &httputil.ReverseProxy{Director: CustomDirector(summaryURLs, newCtx)}
+	// Create URLs for proxies
 	parkingURLs := getURLs(parkingAddr)
 	parkingProxy := &httputil.ReverseProxy{Director: CustomDirector(parkingURLs, newCtx)}
 
@@ -158,24 +154,15 @@ func main() {
 	mux.HandleFunc("/v1/users/", newCtx.SpecificUserHandler)
 	mux.HandleFunc("/v1/sessions", newCtx.SessionsHandler)
 	mux.HandleFunc("/v1/sessions/", newCtx.SpecificSessionHandler)
-
-	// new stuff for assignment 
-	// r.HandleFunc("/v1/users/{id}/cars", newCtx.UserCarsHandler)
-	// r.HandleFunc("/v1/users/{id}/cars/{carid}", newCtx.SpecificUserCarHandler)
 	mux.HandleFunc("/v1/cars", newCtx.UserCarsHandler)
 	mux.HandleFunc("/v1/cars/", newCtx.SpecificUserCarHandler)
 
 	mux.Handle("/v1/usersparking", parkingProxy)
 	mux.Handle("/v1/parking/", parkingProxy)
 
-	// mux.Handle("/v1/channels", messagesProxy) // double check the round robin stuff
-	// mux.Handle("/v1/channels/", messagesProxy)
-	// mux.Handle("/v1/messages/", messagesProxy)
-	// mux.Handle("/v1/summary", summaryProxy)
-
 	wrappedMux := &handlers.CORS{Handler: mux}
 
 	log.Printf("Server is listening at %s", addr)
-	log.Fatal(http.ListenAndServeTLS(addr, tlsCertPath, tlsKeyPath, wrappedMux)) // add tls?
+	log.Fatal(http.ListenAndServeTLS(addr, tlsCertPath, tlsKeyPath, wrappedMux))
 
 }
