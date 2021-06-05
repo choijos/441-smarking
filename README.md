@@ -3,8 +3,8 @@
 ![image info](./img/newdiagram.png)
 
 
-# smarking
-[Link to google doc](https://docs.google.com/document/d/1U3aJ9TUyNRi9zDy_ZbaEormrxUn0Ph9EPxJGNONXFck/edit#)
+# Smarking
+[Link to google doc of original proposal](https://docs.google.com/document/d/1U3aJ9TUyNRi9zDy_ZbaEormrxUn0Ph9EPxJGNONXFck/edit#)
 ## Project Description
 
 Many of us have likely had at least one frustrating experience with parking, whether that be forgetting where we’ve parked or losing track of time after parking in a lot with hourly rates resulting in high fees. This is a struggle that is prevalent in many crowded cities such as Seattle that attract tourists from around the world. To help alleviate the stress people may feel around parking we will be building Smarking, a mobile website that helps users store information about their vehicles and set reminders or notifications for any time-sensitive parking areas. Specific features implemented include storing specific car information, starting “sessions" where a user also starts an interval counter for areas with time-based fees, as well as notifications and reminders for this information. Overall, our goal is to create a simple and intuitive tool for drivers that will minimize the possible stress and issues they may encounter with parking. This is an issue that we the developers have all personally encountered, both at the UW and when traveling.
