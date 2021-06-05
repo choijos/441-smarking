@@ -83,7 +83,7 @@ var sms = {
       let secLeft = (endDate.getTime() - now.getTime()) / 1000;
 
       if (!short && secLeft <= 300 && !sentPrem) {
-        let msgBody = "You have 5 minutes remaining in your parking session ("+ currCar.Make + " " + currCar.Model + " - " + currCar.LicensePlate + ") \n[" + parkid + "]";
+        let msgBody = "You have 5 minutes remaining in your parking session\n("+ currCar.Make + " " + currCar.Model + " - " + currCar.LicensePlate + ") \n\n Parking ID: [" + parkid + "]";
         client.messages
           .create({
             body: msgBody,
@@ -189,6 +189,10 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
           email: results[0].email,
           phonenumber: results[0].phonenumber,
         };
+
+        client.validationRequests
+          .create({friendlyName: results[0].email, phoneNumber: results[0].phonenumber})
+          .then(validation_request => console.log(validation_request.friendlyName));
 
         SchemeAndDbForwarder.user = insertUser;
         SchemeAndDbForwarder.uCars = userCars;
