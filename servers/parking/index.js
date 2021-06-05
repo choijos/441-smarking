@@ -5,6 +5,7 @@ const express = require("express");
 const morgan = require("morgan");
 var mysql = require("mysql");
 
+// Creating connection to MySQL database
 var connection = mysql.createConnection({
   host: "finaldb",
   user: "root",
@@ -21,6 +22,7 @@ connection.connect(function (err) {
   console.log("connected as id " + connection.threadId);
 });
 
+// Importing handlers and schema
 const { parkingSchema } = require("./models/schemas");
 const {
   postParkingHandler,
@@ -31,6 +33,7 @@ const {
   invalidMethod,
 } = require("./handlers/handlers");
 
+// Setting connection to mongodb container
 const mongoEndpoint = "mongodb://customMongoContainer:27017/test"; // test is name of database
 
 const addr = process.env.PARKINGADDR || ":80";
@@ -43,6 +46,7 @@ const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
 
 const client = require("twilio")(accountSid, authToken);
 
+// Creating parking mongodb model for documents
 const Parking = mongoose.model("Parking", parkingSchema);
 
 const app = express();
@@ -143,6 +147,7 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
       return;
     }
 
+    // grabbing all cars registered under this user
     let userCars = [];
 
     connection.query(
@@ -168,6 +173,7 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
 
     );
 
+    // grabbing relevant user info
     connection.query(
       "select id, email, phonenumber from users where id = ?",
       [user.id],

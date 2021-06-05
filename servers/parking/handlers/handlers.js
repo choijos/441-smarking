@@ -1,4 +1,4 @@
-// Parking
+// postParkingHandler starts a parking session for specific user
 const postParkingHandler = async (req, res, { Parking, user, uCars, sms }) => {
   if (req.get("Content-Type") != "application/json") {
     res.status(415).send("Must be JSON");
@@ -85,11 +85,12 @@ const postParkingHandler = async (req, res, { Parking, user, uCars, sms }) => {
 
   });
 
-  // TWILIO WORK
+  // starting twilio notfication timer
   sms.Start(newParking.endTime, user.phonenumber, query._id, currCar);
 
 };
 
+// getParkingHandler returns all parking sessions the user current has ongoing
 const getParkingHandler = async (req, res, { Parking, user }) => {
   try {
     const parking = await Parking.find();
@@ -102,9 +103,7 @@ const getParkingHandler = async (req, res, { Parking, user }) => {
   }
 };
 
-// Spec. Parking
-
-// Spec. Channels
+// getSpecParkingHandler returns the information on parking session with the given parkid
 const getSpecParkingHandler = async (req, res, { Parking, user }) => {
   try {
     const parking = await Parking.findOne({ _id: req.params.parkid });
@@ -114,6 +113,7 @@ const getSpecParkingHandler = async (req, res, { Parking, user }) => {
   }
 };
 
+// patchSpecParkingHandler marks the parking session with the given parkid complete, stopping the twilio timer
 const patchSpecParkingHandler = async (req, res, { Parking, user, sms }) => {
   try {
     const parking = await Parking.find({ _id: req.params.parkid });
@@ -158,6 +158,7 @@ const patchSpecParkingHandler = async (req, res, { Parking, user, sms }) => {
   }
 };
 
+// deleteSpecParkingHandler removes the specific parking session with given parkid from the parking schema
 const deleteSpecParkingHandler = async (req, res, { Parking, user }) => {
   try {
     const parking = await Parking.findOne({ _id: req.params.parkid });
@@ -176,6 +177,7 @@ const deleteSpecParkingHandler = async (req, res, { Parking, user }) => {
   }
 };
 
+// invalidMethod handles all inappropriate requests of unsupported/invalid methods
 const invalidMethod = async (req, res, {}) => {
   res.status(405).send("This method is not allowed");
   return;
