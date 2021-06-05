@@ -1,3 +1,8 @@
+### Revised diagram:
+
+![image info](./img/newdiagram.png)
+
+
 # smarking
 [Link to google doc](https://docs.google.com/document/d/1U3aJ9TUyNRi9zDy_ZbaEormrxUn0Ph9EPxJGNONXFck/edit#)
 ## Project Description
