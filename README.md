@@ -27,42 +27,42 @@ Many of us have likely had at least one frustrating experience with parking, whe
 
 **Sign-ins and Users**
 
-POST /v1/users (Creates a new user)  
-* 201, 400, 415  
-GET /v1/users/{id} (Returns the given user) 
-* 200, 401, 404, 406, 500  
-PATCH /v1/users/{id} (Edits the given user) 
-* 200, 400, 401, 403, 405, 415, 500  
-POST /v1/sessions (Starts a new session)  
-* 201, 400, 401, 415, 500  
-DELETE /v1/sessions/mine (Ends the current session)  
-* 403, 500  
+* POST /v1/users (Creates a new user)  
+    * 201, 400, 415  
+* GET /v1/users/{id} (Returns the given user) 
+    * 200, 401, 404, 406, 500  
+* PATCH /v1/users/{id} (Edits the given user) 
+    * 200, 400, 401, 403, 405, 415, 500  
+* POST /v1/sessions (Starts a new session)  
+    * 201, 400, 401, 415, 500  
+* DELETE /v1/sessions/mine (Ends the current session)  
+    * 403, 500  
 
 **Cars**
 
-POST /v1/cars (Adds a car to the user’s account)  
-* 201, 400, 401, 415, 500  
-GET /v1/cars (Returns all of the given user’s cars)  
-* 200, 500  
-GET /v1/cars/{carid} (Returns the given user’s car)  
-* 200, 400, 401, 500  
-PATCH /v1/cars/{carid} (Edits the given user’s car)  
-* 200, 400, 401, 415, 500  
-DELETE /v1/cars/{carid} (Remove the given user’s car)  
-* 400, 401  
+* POST /v1/cars (Adds a car to the user’s account)  
+    * 201, 400, 401, 415, 500  
+* GET /v1/cars (Returns all of the given user’s cars)  
+    * 200, 500  
+* GET /v1/cars/{carid} (Returns the given user’s car)  
+    * 200, 400, 401, 500  
+* PATCH /v1/cars/{carid} (Edits the given user’s car)  
+    * 200, 400, 401, 415, 500  
+* DELETE /v1/cars/{carid} (Remove the given user’s car)  
+    * 400, 401  
 
 **Parking**
 
-POST /v1/usersparking (Starts a parking request) 
-* 401, 201, 400, 415, 500  
-GET /v1/usersparking (Returns all user ongoing parking requests)  
-* 401, 500  
-GET /v1/parking/{parkid} (Returns on the specific parking request)  
-* 401, 500  
-PATCH /v1/parking/{parkid} (End the specific parking session)  
-* 200, 400, 401, 403, 404, 415, 500  
-DELETE /v1/parking/{parkid} (Completely remove the specific parking session)  
-* 401, 403, 404, 405  
+* POST /v1/usersparking (Starts a parking request) 
+    * 401, 201, 400, 415, 500  
+* GET /v1/usersparking (Returns all user ongoing parking requests)  
+    * 401, 500  
+* GET /v1/parking/{parkid} (Returns on the specific parking request)  
+    * 401, 500  
+* PATCH /v1/parking/{parkid} (End the specific parking session)  
+    * 200, 400, 401, 403, 404, 415, 500  
+* DELETE /v1/parking/{parkid} (Completely remove the specific parking session)  
+    * 401, 403, 404, 405  
 
 ### Database Schemas
 
