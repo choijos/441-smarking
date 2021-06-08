@@ -9,6 +9,7 @@ docker run -d \
     -e TWILIO_ACCOUNT_SID=$TWILIO_ACCOUNT_SID \
     -e TWILIO_AUTH_TOKEN=$TWILIO_AUTH_TOKEN \
     -e TWILIO_PHONE_NUMBER=$TWILIO_PHONE_NUMBER \
+    --restart unless-stopped \
     --name parking \
     --network info441network \
     pbatalov/parking
