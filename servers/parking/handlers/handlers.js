@@ -58,7 +58,7 @@ const postParkingHandler = async (req, res, { Parking, user, uCars, sms }) => {
 
   for (let i = 0; i < carPark.length; i++) {
     let currPark = carPark[i];
-    if (!currPark.isComplete) {
+    if (!(currPark.isComplete)) {
       res.status(400).send("There is already a parking session ongoing with this car");
       return;
 
