@@ -1,8 +1,6 @@
 docker pull pbatalov/parking
 
 export PARKINGOWNADDR=:80
-export TWILIO_ACCOUNT_SID=AC069f87f23ef2ca0f083787c7955121bf
-export TWILIO_PHONE_NUMBER=+15715703631
 
 docker rm -f parking
 
