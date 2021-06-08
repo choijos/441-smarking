@@ -190,10 +190,6 @@ const RequestWrapper = (handler, SchemeAndDbForwarder) => {
           phonenumber: results[0].phonenumber,
         };
 
-        client.validationRequests
-          .create({friendlyName: results[0].email, phoneNumber: results[0].phonenumber})
-          .then(validation_request => console.log(validation_request.friendlyName));
-
         SchemeAndDbForwarder.user = insertUser;
         SchemeAndDbForwarder.uCars = userCars;
         SchemeAndDbForwarder.sms = sms;
