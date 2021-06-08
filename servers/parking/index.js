@@ -72,7 +72,7 @@ var sms = {
     let endDate = new Date(endTime);
     let total = (endDate.getTime() - now.getTime()) / 1000;
     let short = false;
-    if (total <= 350) {
+    if (total <= 300) {
       short = true;
   
     }

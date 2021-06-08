@@ -47,7 +47,7 @@ const postParkingHandler = async (req, res, { Parking, user, uCars, sms }) => {
   }
   
   // checking if there is currently a parking session that hasn't been completed
-  let carPark = await Parking.find({ carID: convCar, owner: user._id }, function (err, docs) {
+  let carPark = await Parking.find({ carID: convCar }, function (err, docs) {
     if (err) {
       res.status(500).send("There was an error retrieving parking");
       return;
@@ -58,7 +58,7 @@ const postParkingHandler = async (req, res, { Parking, user, uCars, sms }) => {
 
   for (let i = 0; i < carPark.length; i++) {
     let currPark = carPark[i];
-    if (!(currPark.isComplete)) {
+    if (!(currPark.isComplete) && currPark.owner._id == user._id) {
       res.status(400).send("There is already a parking session ongoing with this car");
       return;
 
